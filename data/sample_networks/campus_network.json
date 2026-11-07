@@ -1,0 +1,59 @@
+{
+  "name": "Campus Network",
+  "direction": "undirected",
+  "devices": [
+    {
+      "id": 1,
+      "name": "Campus Gateway",
+      "ip_address": "192.0.2.1",
+      "type": "router",
+      "vulnerability_score": 20,
+      "exposure_score": 80,
+      "connectivity_score": 75,
+      "criticality_score": 90,
+      "is_critical": true,
+      "is_active": true
+    },
+    {
+      "id": 2,
+      "name": "Core Firewall",
+      "ip_address": "192.0.2.2",
+      "type": "firewall",
+      "vulnerability_score": 15,
+      "exposure_score": 45,
+      "connectivity_score": 60,
+      "criticality_score": 85,
+      "is_critical": true,
+      "is_active": true
+    },
+    {
+      "id": 3,
+      "name": "Research Server",
+      "ip_address": "192.0.2.3",
+      "type": "server",
+      "vulnerability_score": 55,
+      "exposure_score": 35,
+      "connectivity_score": 45,
+      "criticality_score": 70,
+      "is_critical": true,
+      "is_active": true
+    },
+    {
+      "id": 4,
+      "name": "Student Workstation",
+      "ip_address": "192.0.2.4",
+      "type": "workstation",
+      "vulnerability_score": 40,
+      "exposure_score": 30,
+      "connectivity_score": 25,
+      "criticality_score": 20,
+      "is_critical": false,
+      "is_active": true
+    }
+  ],
+  "edges": [
+    { "source_id": 1, "destination_id": 2, "cost": 1.0, "is_active": true },
+    { "source_id": 2, "destination_id": 3, "cost": 2.5, "is_active": true },
+    { "source_id": 2, "destination_id": 4, "cost": 1.5, "is_active": true }
+  ]
+}
