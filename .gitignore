@@ -1,0 +1,25 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Compiled output
+build/
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.a
+
+# Runtime protocol files
+runtime/
+
+# Local editor / OS files
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
+
+docs/
