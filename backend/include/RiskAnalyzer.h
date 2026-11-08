@@ -18,10 +18,10 @@ struct RiskAssessment {
 
 // Inputs are already normalized to the documented 0-100 scale and are
 // validated at graph boundaries. The formula returns a score in that scale.
-double calculateRiskScore(const Device& device);
-RiskCategory classifyRisk(double score);
+double riskScore(const Device& device);
+RiskCategory riskLevel(double score);
 const char* riskCategoryName(RiskCategory category) noexcept;
 RiskAssessment assessRisk(const Device& device);
-vector<RiskAssessment> rankRisk(const Graph& graph);
+vector<RiskAssessment> rankByRisk(const Graph& graph);
 
 }  // namespace cyberpath

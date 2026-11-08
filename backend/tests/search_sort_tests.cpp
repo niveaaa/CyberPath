@@ -45,30 +45,30 @@ void checkSortedOutput(const cyberpath::SortResult<T>& result,
 void testLinearSearch() {
     const vector<int> values{8, 3, 5, 3, 10};
     const auto found = cyberpath::linearSearch(values, 5);
-    check(found.found() && found.index == 2 && found.comparisons == 3,
+    check(found.found && found.index == 2 && found.comparisons == 3,
           "linear search reports first match and comparisons");
     const auto missing = cyberpath::linearSearch(values, 7);
-    check(!missing.found() && !missing.index && missing.comparisons == 5,
+    check(!missing.found && missing.comparisons == 5,
           "linear search reports an absent item");
     const vector<int> empty;
     const auto emptyResult = cyberpath::linearSearch(empty, 1);
-    check(!emptyResult.found() && emptyResult.comparisons == 0,
+    check(!emptyResult.found && emptyResult.comparisons == 0,
           "linear search handles empty input");
 }
 
 void testBinarySearch() {
     const cyberpath::SortedData<int> sorted({1, 2, 3, 4, 5, 6, 7, 8});
     const auto found = cyberpath::binarySearch(sorted, 6);
-    check(found.found() && found.index == 5 && found.comparisons == 5,
+    check(found.found && found.index == 5 && found.comparisons == 5,
           "binary search reports match index and less-than comparisons");
     const auto missing = cyberpath::binarySearch(sorted, 0);
-    check(!missing.found() && missing.comparisons <= 8,
+    check(!missing.found && missing.comparisons <= 8,
           "binary search reports absent item in logarithmic probes");
     expectInvalidArgument(
         [] { cyberpath::SortedData<int> invalid({1, 3, 2}); },
         "binary search data wrapper rejects unsorted input");
     const cyberpath::SortedData<int> empty({});
-    check(!cyberpath::binarySearch(empty, 1).found(),
+    check(!cyberpath::binarySearch(empty, 1).found,
           "binary search handles empty sorted input");
 }
 

@@ -21,19 +21,13 @@ void validateScore(double score, const char* fieldName) {
 
 }  // namespace
 
-double calculateRiskScore(const Device& device) {
+double riskScore(const Device& device) {
     validateScore(device.vulnerabilityScore, "vulnerability_score");
     validateScore(device.exposureScore, "exposure_score");
-    validateScore(device.connectivityScore, "connectivity_score");
-    validateScore(device.criticalityScore, "criticality_score");
-
-    return 0.40 * device.vulnerabilityScore +
-           0.25 * device.exposureScore +
-           0.20 * device.connectivityScore +
-           0.15 * device.criticalityScore;
+    return (device.vulnerabilityScore + device.exposureScore) / 2.0;
 }
 
-RiskCategory classifyRisk(double score) {
+RiskCategory riskLevel(double score) {
     validateScore(score, "risk_score");
     if (score < 34.0) {
         return RiskCategory::Low;
@@ -59,12 +53,12 @@ const char* riskCategoryName(RiskCategory category) noexcept {
 RiskAssessment assessRisk(const Device& device) {
     RiskAssessment assessment;
     assessment.device = device;
-    assessment.device.riskScore = calculateRiskScore(device);
-    assessment.category = classifyRisk(assessment.device.riskScore);
+    assessment.device.riskScore = riskScore(device);
+    assessment.category = riskLevel(assessment.device.riskScore);
     return assessment;
 }
 
-vector<RiskAssessment> rankRisk(const Graph& graph) {
+vector<RiskAssessment> rankByRisk(const Graph& graph) {
     vector<RiskAssessment> assessments;
     assessments.reserve(graph.deviceCount());
     for (const Device& device : graph.devices()) {

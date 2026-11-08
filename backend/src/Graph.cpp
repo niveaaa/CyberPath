@@ -9,22 +9,22 @@ using namespace std;
 
 namespace cyberpath {
 
-void Graph::addDevice(const Device& deviceValue) {
-    validateDevice(deviceValue);
-    if (devices_.find(deviceValue.id) != devices_.end()) {
+void Graph::addDevice(const Device& device) {
+    validateDevice(device);
+    if (devices_.find(device.id) != devices_.end()) {
         throw invalid_argument("Device ID already exists.");
     }
-    if (deviceIdsByName_.contains(deviceValue.name)) {
+    if (deviceIdsByName_.contains(device.name)) {
         throw invalid_argument("Device name already exists.");
     }
-    if (deviceIdsByIpAddress_.contains(deviceValue.ipAddress)) {
+    if (deviceIdsByIpAddress_.contains(device.ipAddress)) {
         throw invalid_argument("Device IP address already exists.");
     }
 
-    devices_.emplace(deviceValue.id, deviceValue);
-    adjacency_.emplace(deviceValue.id, vector<Edge>{});
-    deviceIdsByName_.insert(deviceValue.name, deviceValue.id);
-    deviceIdsByIpAddress_.insert(deviceValue.ipAddress, deviceValue.id);
+    devices_.emplace(device.id, device);
+    adjacency_.emplace(device.id, vector<Edge>{});
+    deviceIdsByName_.insert(device.name, device.id);
+    deviceIdsByIpAddress_.insert(device.ipAddress, device.id);
 }
 
 bool Graph::removeDevice(int id) {
@@ -56,19 +56,18 @@ const Device& Graph::device(int id) const {
     return found->second;
 }
 
-optional<int> Graph::deviceIdByName(const string& name) const {
+int Graph::findDeviceByName(const string& name) const {
     const int* id = deviceIdsByName_.find(name);
     if (id == nullptr) {
-        return nullopt;
+        return -1;
     }
     return *id;
 }
 
-optional<int> Graph::deviceIdByIpAddress(
-    const string& ipAddress) const {
+int Graph::findDeviceByIp(const string& ipAddress) const {
     const int* id = deviceIdsByIpAddress_.find(ipAddress);
     if (id == nullptr) {
-        return nullopt;
+        return -1;
     }
     return *id;
 }
@@ -202,36 +201,17 @@ void Graph::setDeviceActive(int id, bool isActive) {
     found->second.isActive = isActive;
 }
 
-void Graph::setRiskAttributes(int id, const RiskAttributes& attributes) {
-    const auto found = devices_.find(id);
-    if (found == devices_.end()) {
-        throw out_of_range("Device ID does not exist.");
-    }
-    validateScore(attributes.vulnerabilityScore, "vulnerability_score");
-    validateScore(attributes.exposureScore, "exposure_score");
-    validateScore(attributes.connectivityScore, "connectivity_score");
-    validateScore(attributes.criticalityScore, "criticality_score");
-
-    found->second.vulnerabilityScore = attributes.vulnerabilityScore;
-    found->second.exposureScore = attributes.exposureScore;
-    found->second.connectivityScore = attributes.connectivityScore;
-    found->second.criticalityScore = attributes.criticalityScore;
-    found->second.isCritical = attributes.isCritical;
-}
-
-void Graph::validateDevice(const Device& deviceValue) {
-    if (deviceValue.id < 0) {
+void Graph::validateDevice(const Device& device) {
+    if (device.id < 0) {
         throw invalid_argument("Device ID must be non-negative.");
     }
-    if (deviceValue.name.empty() || deviceValue.ipAddress.empty() ||
-        deviceValue.type.empty()) {
+    if (device.name.empty() || device.ipAddress.empty() ||
+        device.type.empty()) {
         throw invalid_argument("Device name, IP address, and type are required.");
     }
-    validateScore(deviceValue.vulnerabilityScore, "vulnerability_score");
-    validateScore(deviceValue.exposureScore, "exposure_score");
-    validateScore(deviceValue.connectivityScore, "connectivity_score");
-    validateScore(deviceValue.criticalityScore, "criticality_score");
-    validateScore(deviceValue.riskScore, "risk_score");
+    validateScore(device.vulnerabilityScore, "vulnerability_score");
+    validateScore(device.exposureScore, "exposure_score");
+    validateScore(device.riskScore, "risk_score");
 }
 
 void Graph::validateScore(double score, const char* fieldName) {

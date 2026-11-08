@@ -1,8 +1,7 @@
-﻿"""CyberPath defensive network analysis dashboard."""
+"""CyberPath defensive network analysis dashboard."""
 
 from __future__ import annotations
 
-import copy
 import json
 import os
 from pathlib import Path
@@ -23,8 +22,6 @@ def _initialize_state() -> None:
     if "network" not in st.session_state:
         sample = load_sample_network("campus_network.json")
         st.session_state.network = sample
-        st.session_state.baseline_network = copy.deepcopy(sample)
-        st.session_state.simulation_network = copy.deepcopy(sample)
 
 
 def _risk_data(network):
@@ -62,10 +59,10 @@ def _draw_network(network, risks=None, highlighted=None, highlighted_path=None, 
 
 def _network_editor():
     st.subheader("Network editor")
-    st.caption("Edit devices and weighted connections. Save validates the full network before it becomes the new baseline.")
+    st.caption("Edit devices and weighted connections. Save validates the complete network.")
     device_frame = pd.DataFrame(st.session_state.network["devices"], columns=[
         "id", "name", "ip_address", "type", "vulnerability_score", "exposure_score",
-        "connectivity_score", "criticality_score", "is_critical", "is_active",
+        "is_critical", "is_active",
     ])
     edge_frame = pd.DataFrame(st.session_state.network["edges"], columns=[
         "source_id", "destination_id", "cost", "is_active",
@@ -78,8 +75,6 @@ def _network_editor():
                 "id": st.column_config.NumberColumn("ID", step=1),
                 "vulnerability_score": st.column_config.NumberColumn("Vulnerability", min_value=0, max_value=100),
                 "exposure_score": st.column_config.NumberColumn("Exposure", min_value=0, max_value=100),
-                "connectivity_score": st.column_config.NumberColumn("Connectivity", min_value=0, max_value=100),
-                "criticality_score": st.column_config.NumberColumn("Criticality", min_value=0, max_value=100),
             },
         )
     with right:
@@ -89,16 +84,14 @@ def _network_editor():
                            "destination_id": st.column_config.NumberColumn(step=1),
                            "cost": st.column_config.NumberColumn(min_value=0)},
         )
-    if st.button("Save network as baseline", type="primary"):
+    if st.button("Save network", type="primary"):
         try:
             devices = edited_devices.dropna(subset=["id", "name", "ip_address", "type"]).to_dict("records")
             edges = edited_edges.dropna(subset=["source_id", "destination_id", "cost"]).to_dict("records")
             candidate = {"devices": devices, "edges": edges}
             validate_network(candidate)
             st.session_state.network = candidate
-            st.session_state.baseline_network = copy.deepcopy(candidate)
-            st.session_state.simulation_network = copy.deepcopy(candidate)
-            st.success("Network saved. The saved network is now the simulation baseline.")
+            st.success("Network saved.")
             st.rerun()
         except (ValueError, TypeError) as error:
             _show_engine_error(error)
@@ -111,26 +104,22 @@ def _network_editor():
             try:
                 network = load_sample_network(selected)
                 st.session_state.network = network
-                st.session_state.baseline_network = copy.deepcopy(network)
-                st.session_state.simulation_network = copy.deepcopy(network)
                 st.success(f"Loaded {selected}.")
                 st.rerun()
             except (OSError, ValueError, KeyError, json.JSONDecodeError) as error:
                 _show_engine_error(ValueError(str(error)))
 
     with st.expander("Create an empty network"):
-        st.write("This clears the current graph and starts a new baseline.")
+        st.write("This clears the current graph.")
         if st.button("Create empty network", type="secondary"):
             empty = {"devices": [], "edges": []}
             st.session_state.network = empty
-            st.session_state.baseline_network = copy.deepcopy(empty)
-            st.session_state.simulation_network = copy.deepcopy(empty)
             st.rerun()
 
 
 def _dashboard(network):
     st.title("CyberPath")
-    st.caption("Explore and simulate a fictional network using defensive graph and risk analysis.")
+    st.caption("Explore a fictional network using defensive graph and risk analysis.")
     devices, edges = network["devices"], network["edges"]
     active_devices = sum(device.get("is_active", True) for device in devices)
     active_edges = sum(edge.get("is_active", True) for edge in edges)
@@ -143,14 +132,14 @@ def _dashboard(network):
         try:
             ranked, categories = _risk_data(network)
             top = ranked[0]
-            st.info(f"Highest simulated risk: **{top['name']}** Â· {top['risk_score']:.1f}/100 Â· {top['category']}")
+            st.info(f"Highest calculated risk: **{top['name']}** Â· {top['risk_score']:.1f}/100 Â· {top['category']}")
             _draw_network(network, categories)
         except EngineError as error:
             _show_engine_error(error)
             _draw_network(network)
     else:
         _draw_network(network)
-    st.markdown("Use the sidebar to edit a network, run algorithms, inspect risk, or compare a what-if simulation.")
+    st.markdown("Use the sidebar to edit a network, run algorithms, inspect risk, or compare algorithm performance.")
 
 
 def _algorithm_lab(network):
@@ -192,7 +181,7 @@ def _algorithm_lab(network):
 
 def _risk_page(network):
     st.title("Risk Analysis")
-    st.caption("Simulated weighted risk: 40% vulnerability, 25% exposure, 20% connectivity, and 15% criticality.")
+    st.caption("Risk score is the average of vulnerability and exposure, each scored from 0 to 100.")
     if not network["devices"]:
         st.info("Add or load devices in Network Editor first.")
         return
@@ -204,7 +193,6 @@ def _risk_page(network):
             device = components[int(item["id"])]
             table.append({"Rank": len(table) + 1, "Device": item["name"], "ID": item["id"],
                           "Vulnerability": device["vulnerability_score"], "Exposure": device["exposure_score"],
-                          "Connectivity": device["connectivity_score"], "Criticality": device["criticality_score"],
                           "Risk score": item["risk_score"], "Category": item["category"]})
         frame = pd.DataFrame(table)
         st.dataframe(frame, hide_index=True, width="stretch")
@@ -218,59 +206,6 @@ def _risk_page(network):
         _draw_network(network, categories)
     except EngineError as error:
         _show_engine_error(error)
-
-
-def _simulator():
-    st.title("What-If Simulator")
-    baseline = st.session_state.baseline_network
-    if not baseline["devices"]:
-        st.info("Add or load a baseline network in Network Editor first.")
-        return
-    st.caption("Edit the simulation copy. The saved baseline remains unchanged until you save a new network in Network Editor.")
-    sim = st.session_state.simulation_network
-    device_frame = pd.DataFrame(sim["devices"], columns=[
-        "id", "name", "ip_address", "type", "vulnerability_score", "exposure_score",
-        "connectivity_score", "criticality_score", "is_critical", "is_active",
-    ])
-    edge_frame = pd.DataFrame(sim["edges"], columns=["source_id", "destination_id", "cost", "is_active"])
-    with st.expander("Simulation device state and risk", expanded=True):
-        changed_devices = st.data_editor(device_frame, hide_index=True, key="simulation_device_editor",
-                                         disabled=["id", "name", "ip_address", "type"],
-                                         column_config={field: st.column_config.NumberColumn(min_value=0, max_value=100) for field in ("vulnerability_score", "exposure_score", "connectivity_score", "criticality_score")})
-    with st.expander("Simulation connection state", expanded=True):
-        changed_edges = st.data_editor(edge_frame, hide_index=True, key="simulation_edge_editor",
-                                       disabled=["source_id", "destination_id", "cost"])
-    selected_algorithm = st.selectbox("Compare using", ["bfs", "dfs", "dijkstra", "risk"], format_func=lambda value: value.upper())
-    ids = [int(device["id"]) for device in baseline["devices"]]
-    source = target = None
-    if selected_algorithm in ("bfs", "dfs", "dijkstra"):
-        source = st.selectbox("Source", ids, key="simulation_source")
-    if selected_algorithm == "dijkstra":
-        target = st.selectbox("Target", ids, index=min(1, len(ids) - 1), key="simulation_target")
-    apply, reset = st.columns(2)
-    if apply.button("Compare baseline and simulation", type="primary"):
-        try:
-            candidate = {"devices": changed_devices.to_dict("records"), "edges": changed_edges.to_dict("records")}
-            validate_network(candidate)
-            st.session_state.simulation_network = candidate
-            before = _analysis(selected_algorithm, baseline, source, target)
-            after = _analysis(selected_algorithm, candidate, source, target)
-            first, second = st.columns(2)
-            with first:
-                st.markdown("#### Baseline")
-                st.json(before["result"])
-                st.caption(f"Vertices visited: {before['metrics'].get('vertices_visited', 'â€”')} Â· Edges examined: {before['metrics'].get('edges_examined', 'â€”')}")
-                _draw_network(baseline, chart_key="simulation-baseline-graph")
-            with second:
-                st.markdown("#### Simulation")
-                st.json(after["result"])
-                st.caption(f"Vertices visited: {after['metrics'].get('vertices_visited', 'â€”')} Â· Edges examined: {after['metrics'].get('edges_examined', 'â€”')}")
-                _draw_network(candidate, chart_key="simulation-current-graph")
-        except (ValueError, EngineError, KeyError) as error:
-            _show_engine_error(error if isinstance(error, EngineError) else ValueError(str(error)))
-    if reset.button("Reset simulation to baseline"):
-        st.session_state.simulation_network = copy.deepcopy(baseline)
-        st.rerun()
 
 
 def _benchmark_page():
@@ -317,7 +252,7 @@ def main() -> None:
     _initialize_state()
     st.sidebar.title("CyberPath")
     st.sidebar.caption("Defensive network analysis")
-    pages = ["Dashboard", "Network Editor", "Algorithm Lab", "Risk Analysis", "What-If Simulator", "Benchmark Lab"]
+    pages = ["Dashboard", "Network Editor", "Algorithm Lab", "Risk Analysis", "Benchmark Lab"]
     page = st.sidebar.radio("Navigate", pages)
     executable = os.environ.get("CYBERPATH_ENGINE_PATH", "build/cyberpath_engine.exe (default)")
     st.sidebar.caption(f"C++ engine: {executable}")
@@ -332,8 +267,6 @@ def main() -> None:
         _algorithm_lab(network)
     elif page == "Risk Analysis":
         _risk_page(network)
-    elif page == "What-If Simulator":
-        _simulator()
     elif page == "Benchmark Lab":
         _benchmark_page()
 

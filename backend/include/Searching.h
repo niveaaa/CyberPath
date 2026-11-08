@@ -2,7 +2,6 @@
 
 #include <cstddef>
 #include <functional>
-#include <optional>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -12,10 +11,9 @@ using namespace std;
 namespace cyberpath {
 
 struct SearchResult {
-    optional<size_t> index;
+    bool found = false;
+    size_t index = 0;
     size_t comparisons = 0;
-
-    bool found() const noexcept { return index.has_value(); }
 };
 
 template <typename T, typename Less = less<T>>
@@ -47,6 +45,7 @@ SearchResult linearSearch(const vector<T>& values, const T& target,
     for (size_t index = 0; index < values.size(); ++index) {
         ++result.comparisons;
         if (equal(values[index], target)) {
+            result.found = true;
             result.index = index;
             return result;
         }
@@ -76,6 +75,7 @@ SearchResult binarySearch(const SortedData<T, Less>& data, const T& target) {
             high = middle;
             continue;
         }
+        result.found = true;
         result.index = middle;
         return result;
     }

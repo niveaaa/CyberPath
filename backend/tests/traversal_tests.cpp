@@ -74,54 +74,54 @@ cyberpath::Graph makeCyclicGraph() {
 void testBfsOrderReachabilityAndDistances() {
     const cyberpath::Graph graph = makeCyclicGraph();
     const cyberpath::BFSResult result =
-        cyberpath::breadthFirstSearch(graph, 10);
+        cyberpath::bfs(graph, 10);
 
-    checkOrder(result.traversalOrder, {10, 20, 30, 40},
+    checkOrder(result.order, {10, 20, 30, 40},
                "BFS visits breadth-first in ascending neighbor order");
-    checkOrder(result.reachableDevices, result.traversalOrder,
+    checkOrder(result.reachable, result.order,
                "BFS reachable devices match traversal order");
-    check(result.hopDistances.size() == 4 && result.hopDistances.at(10) == 0 &&
-              result.hopDistances.at(20) == 1 &&
-              result.hopDistances.at(30) == 1 &&
-              result.hopDistances.at(40) == 2,
+    check(result.distance.size() == 4 && result.distance.at(10) == 0 &&
+              result.distance.at(20) == 1 &&
+              result.distance.at(30) == 1 &&
+              result.distance.at(40) == 2,
           "BFS reports minimum hop distance for each reachable device");
-    check(result.metrics.verticesVisited == 4,
+    check(result.metrics.visited == 4,
           "BFS reports visited vertex count");
-    check(result.metrics.edgesExamined == 10,
+    check(result.metrics.checkedEdges == 10,
           "BFS counts each inspected adjacency entry");
 }
 
 void testDfsOrderAndMetrics() {
     const cyberpath::Graph graph = makeCyclicGraph();
     const cyberpath::DFSResult result =
-        cyberpath::depthFirstSearch(graph, 10);
+        cyberpath::dfs(graph, 10);
 
-    checkOrder(result.traversalOrder, {10, 20, 30, 40},
+    checkOrder(result.order, {10, 20, 30, 40},
                "iterative DFS follows recursive ascending-neighbor order");
-    checkOrder(result.reachableDevices, result.traversalOrder,
+    checkOrder(result.reachable, result.order,
                "DFS reachable devices match traversal order");
-    check(result.metrics.verticesVisited == 4,
+    check(result.metrics.visited == 4,
           "DFS reports visited vertex count");
-    check(result.metrics.edgesExamined == 10,
+    check(result.metrics.checkedEdges == 10,
           "DFS stops scanning a vertex after exploring all its neighbors");
 }
 
 void testSingleAndEmptyGraphs() {
     cyberpath::Graph single;
     single.addDevice(makeDevice(1000000));
-    const auto bfs = cyberpath::breadthFirstSearch(single, 1000000);
-    const auto dfs = cyberpath::depthFirstSearch(single, 1000000);
-    checkOrder(bfs.traversalOrder, {1000000}, "BFS handles an isolated device");
-    checkOrder(dfs.traversalOrder, {1000000}, "DFS handles an isolated device");
-    check(bfs.hopDistances.at(1000000) == 0 && bfs.metrics.edgesExamined == 0,
+    const auto bfs = cyberpath::bfs(single, 1000000);
+    const auto dfs = cyberpath::dfs(single, 1000000);
+    checkOrder(bfs.order, {1000000}, "BFS handles an isolated device");
+    checkOrder(dfs.order, {1000000}, "DFS handles an isolated device");
+    check(bfs.distance.at(1000000) == 0 && bfs.metrics.checkedEdges == 0,
           "single-device BFS distance and edge metrics are correct");
-    check(dfs.metrics.edgesExamined == 0 && dfs.metrics.verticesVisited == 1,
+    check(dfs.metrics.checkedEdges == 0 && dfs.metrics.visited == 1,
           "single-device DFS metrics are correct");
 
     cyberpath::Graph empty;
-    expectOutOfRange([&] { cyberpath::breadthFirstSearch(empty, 1); },
+    expectOutOfRange([&] { cyberpath::bfs(empty, 1); },
                      "BFS rejects a missing source");
-    expectOutOfRange([&] { cyberpath::depthFirstSearch(empty, 1); },
+    expectOutOfRange([&] { cyberpath::dfs(empty, 1); },
                      "DFS rejects a missing source");
 }
 
@@ -135,25 +135,25 @@ void testInactiveDevicesAndEdges() {
     graph.addEdge(2, 3, 1.0, false);
     graph.addEdge(3, 4, 1.0);
 
-    const auto bfs = cyberpath::breadthFirstSearch(graph, 1);
-    const auto dfs = cyberpath::depthFirstSearch(graph, 1);
-    checkOrder(bfs.traversalOrder, {1, 2}, "BFS ignores inactive edges");
-    checkOrder(dfs.traversalOrder, {1, 2}, "DFS ignores inactive edges");
-    check(bfs.metrics.edgesExamined == 3 && dfs.metrics.edgesExamined == 3,
+    const auto bfs = cyberpath::bfs(graph, 1);
+    const auto dfs = cyberpath::dfs(graph, 1);
+    checkOrder(bfs.order, {1, 2}, "BFS ignores inactive edges");
+    checkOrder(dfs.order, {1, 2}, "DFS ignores inactive edges");
+    check(bfs.metrics.checkedEdges == 3 && dfs.metrics.checkedEdges == 3,
           "inactive edge adjacency entries are counted as examined");
 
     graph.setEdgeActive(2, 3, true);
     graph.setDeviceActive(3, false);
-    checkOrder(cyberpath::breadthFirstSearch(graph, 1).traversalOrder, {1, 2},
+    checkOrder(cyberpath::bfs(graph, 1).order, {1, 2},
                "BFS does not traverse into inactive devices");
-    checkOrder(cyberpath::depthFirstSearch(graph, 1).traversalOrder, {1, 2},
+    checkOrder(cyberpath::dfs(graph, 1).order, {1, 2},
                "DFS does not traverse into inactive devices");
 
     expectInvalidArgument(
-        [&] { cyberpath::breadthFirstSearch(graph, 3); },
+        [&] { cyberpath::bfs(graph, 3); },
         "BFS rejects an inactive source");
     expectInvalidArgument(
-        [&] { cyberpath::depthFirstSearch(graph, 3); },
+        [&] { cyberpath::dfs(graph, 3); },
         "DFS rejects an inactive source");
 }
 

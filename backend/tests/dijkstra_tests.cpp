@@ -110,11 +110,11 @@ void testShortestPathAndMetrics() {
     const auto result = cyberpath::dijkstra(graph, 1, 4);
     check(result.reachable, "Dijkstra finds a reachable target");
     checkPath(result.path, {1, 3, 2, 4}, "Dijkstra reconstructs minimum-cost path");
-    check(result.totalCost && *result.totalCost == 3.0,
+    check(result.cost == 3.0,
           "Dijkstra returns minimum total cost");
-    check(result.metrics.verticesVisited == 4,
+    check(result.metrics.visited == 4,
           "Dijkstra counts finalized vertices");
-    check(result.metrics.edgesExamined == 8,
+    check(result.metrics.checkedEdges == 8,
           "Dijkstra counts adjacency entries examined before target finalization");
     check(result.metrics.heapPushes == 6 && result.metrics.heapPops == 4,
           "Dijkstra reports heap pushes and pops");
@@ -133,7 +133,7 @@ void testEqualCostTieIsDeterministic() {
     const auto result = cyberpath::dijkstra(graph, 1, 4);
     checkPath(result.path, {1, 2, 4},
               "equal-cost alternatives use deterministic heap and neighbor order");
-    check(result.totalCost && *result.totalCost == 2.0,
+    check(result.cost == 2.0,
           "equal-cost alternative retains correct path cost");
 }
 
@@ -147,16 +147,15 @@ void testStaleEntriesUnreachableAndSourceTarget() {
     graph.addEdge(3, 2, 1.0);
 
     const auto unreachable = cyberpath::dijkstra(graph, 1, 4);
-    check(!unreachable.reachable && !unreachable.totalCost &&
-              unreachable.path.empty(),
+    check(!unreachable.reachable && unreachable.path.empty(),
           "Dijkstra reports disconnected target without a path or finite cost");
     check(unreachable.metrics.heapPushes == 4 &&
               unreachable.metrics.heapPops == 4 &&
-              unreachable.metrics.verticesVisited == 3,
+              unreachable.metrics.visited == 3,
           "Dijkstra counts and discards a stale heap entry");
 
     const auto same = cyberpath::dijkstra(graph, 2, 2);
-    check(same.reachable && same.totalCost && *same.totalCost == 0.0,
+    check(same.reachable && same.cost == 0.0,
           "source equal to target has zero cost");
     checkPath(same.path, {2}, "source-equals-target path contains one device");
     check(same.metrics.heapPushes == 1 && same.metrics.heapPops == 1,

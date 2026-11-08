@@ -11,7 +11,7 @@ class StreamlitAppTests(unittest.TestCase):
 
     def test_all_pages_render_without_exceptions(self):
         self.assertFalse(self.app.exception)
-        for page in ("Network Editor", "Algorithm Lab", "Risk Analysis", "What-If Simulator", "Benchmark Lab"):
+        for page in ("Network Editor", "Algorithm Lab", "Risk Analysis", "Benchmark Lab"):
             with self.subTest(page=page):
                 self.app.sidebar.radio[0].set_value(page).run()
                 self.assertFalse(self.app.exception)
@@ -22,14 +22,6 @@ class StreamlitAppTests(unittest.TestCase):
         self.app.button[0].click().run()
         self.assertFalse(self.app.exception)
         self.assertTrue(any("Path:" in item.value for item in self.app.markdown))
-
-    def test_simulator_compares_baseline_and_simulation(self):
-        self.app.sidebar.radio[0].set_value("What-If Simulator").run()
-        button = next(item for item in self.app.button if item.label == "Compare baseline and simulation")
-        button.click().run()
-        self.assertFalse(self.app.exception)
-        self.assertTrue(any("Baseline" in item.value for item in self.app.markdown))
-        self.assertTrue(any("Simulation" in item.value for item in self.app.markdown))
 
     def test_benchmark_page_runs_and_displays_measurements(self):
         self.app.sidebar.radio[0].set_value("Benchmark Lab").run()

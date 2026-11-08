@@ -19,7 +19,7 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["id", "name", "ip_address", "type", "vulnerability_score", "exposure_score", "connectivity_score", "criticality_score"],
+            "required": ["id", "name", "ip_address", "type", "vulnerability_score", "exposure_score"],
             "properties": {
               "id": { "type": "integer" },
               "name": { "type": "string", "minLength": 1 },
@@ -27,8 +27,6 @@
               "type": { "type": "string", "minLength": 1 },
               "vulnerability_score": { "type": "number", "minimum": 0, "maximum": 100 },
               "exposure_score": { "type": "number", "minimum": 0, "maximum": 100 },
-              "connectivity_score": { "type": "number", "minimum": 0, "maximum": 100 },
-              "criticality_score": { "type": "number", "minimum": 0, "maximum": 100 },
               "is_critical": { "type": "boolean" },
               "is_active": { "type": "boolean" }
             }

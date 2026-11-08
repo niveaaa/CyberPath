@@ -56,7 +56,7 @@ def validate_network(network: Mapping[str, Any]) -> None:
         ids.add(identifier)
         names.add(name.casefold())
         addresses.add(address)
-        for field in ("vulnerability_score", "exposure_score", "connectivity_score", "criticality_score"):
+        for field in ("vulnerability_score", "exposure_score"):
             try:
                 score = float(device[field])
             except (KeyError, TypeError, ValueError) as error:

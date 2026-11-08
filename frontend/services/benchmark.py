@@ -28,8 +28,6 @@ def generate_network(size: int, topology: str = "sparse", seed: int = 42) -> dic
             "type": "server" if identifier % 5 == 0 else "workstation",
             "vulnerability_score": float((identifier * 17) % 101),
             "exposure_score": float((identifier * 29) % 101),
-            "connectivity_score": float((identifier * 11) % 101),
-            "criticality_score": float((identifier * 7) % 101),
             "is_critical": identifier % 10 == 0,
             "is_active": True,
         })

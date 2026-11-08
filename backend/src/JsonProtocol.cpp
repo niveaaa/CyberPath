@@ -49,8 +49,6 @@ Graph parseNetwork(const Json& request) {
         required(item, "type", Json::value_t::string);
         requiredNumber(item, "vulnerability_score");
         requiredNumber(item, "exposure_score");
-        requiredNumber(item, "connectivity_score");
-        requiredNumber(item, "criticality_score");
         if ((item.contains("is_critical") && !item.at("is_critical").is_boolean()) ||
             (item.contains("is_active") && !item.at("is_active").is_boolean())) {
             throw invalid_argument("Device active/critical flags must be booleans.");
@@ -62,8 +60,6 @@ Graph parseNetwork(const Json& request) {
         device.type = item.at("type").get<string>();
         device.vulnerabilityScore = item.at("vulnerability_score").get<double>();
         device.exposureScore = item.at("exposure_score").get<double>();
-        device.connectivityScore = item.at("connectivity_score").get<double>();
-        device.criticalityScore = item.at("criticality_score").get<double>();
         device.isCritical = item.value("is_critical", false);
         device.isActive = item.value("is_active", true);
         graph.addDevice(device);
@@ -104,33 +100,33 @@ Json handleValidRequest(const Json& request, string& algorithm) {
     Json steps = Json::array();
 
     if (algorithm == "bfs") {
-        const auto value = breadthFirstSearch(graph, params.at("source_id").get<int>());
-        result = {{"traversal_order", value.traversalOrder},
-                  {"reachable_devices", value.reachableDevices},
-                  {"hop_distances", value.hopDistances}};
-        metrics.update({{"vertices_visited", value.metrics.verticesVisited},
-                        {"edges_examined", value.metrics.edgesExamined},
-                        {"algorithm_time_us", value.metrics.executionTimeUs}});
+        const auto value = bfs(graph, params.at("source_id").get<int>());
+        result = {{"traversal_order", value.order},
+                  {"reachable_devices", value.reachable},
+                  {"hop_distances", value.distance}};
+        metrics.update({{"vertices_visited", value.metrics.visited},
+                        {"edges_examined", value.metrics.checkedEdges},
+                        {"algorithm_time_us", value.metrics.timeUs}});
     } else if (algorithm == "dfs") {
-        const auto value = depthFirstSearch(graph, params.at("source_id").get<int>());
-        result = {{"traversal_order", value.traversalOrder},
-                  {"reachable_devices", value.reachableDevices}};
-        metrics.update({{"vertices_visited", value.metrics.verticesVisited},
-                        {"edges_examined", value.metrics.edgesExamined},
-                        {"algorithm_time_us", value.metrics.executionTimeUs}});
+        const auto value = dfs(graph, params.at("source_id").get<int>());
+        result = {{"traversal_order", value.order},
+                  {"reachable_devices", value.reachable}};
+        metrics.update({{"vertices_visited", value.metrics.visited},
+                        {"edges_examined", value.metrics.checkedEdges},
+                        {"algorithm_time_us", value.metrics.timeUs}});
     } else if (algorithm == "dijkstra") {
         const auto value = dijkstra(graph, params.at("source_id").get<int>(),
                                     params.at("target_id").get<int>());
         result = {{"reachable", value.reachable}, {"path", value.path},
-                  {"total_cost", value.totalCost ? Json(*value.totalCost) : Json(nullptr)}};
-        metrics.update({{"vertices_visited", value.metrics.verticesVisited},
-                        {"edges_examined", value.metrics.edgesExamined},
+                  {"total_cost", value.reachable ? Json(value.cost) : Json(nullptr)}};
+        metrics.update({{"vertices_visited", value.metrics.visited},
+                        {"edges_examined", value.metrics.checkedEdges},
                         {"heap_pushes", value.metrics.heapPushes},
                         {"heap_pops", value.metrics.heapPops},
-                        {"algorithm_time_us", value.metrics.executionTimeUs}});
+                        {"algorithm_time_us", value.metrics.timeUs}});
     } else if (algorithm == "risk") {
         Json ranked = Json::array();
-        for (const auto& assessment : rankRisk(graph)) {
+        for (const auto& assessment : rankByRisk(graph)) {
             const Device& device = assessment.device;
             ranked.push_back({{"id", device.id}, {"name", device.name},
                               {"risk_score", device.riskScore},

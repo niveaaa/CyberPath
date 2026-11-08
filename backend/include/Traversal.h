@@ -12,27 +12,27 @@ using namespace std;
 namespace cyberpath {
 
 struct TraversalMetrics {
-    size_t verticesVisited = 0;
-    size_t edgesExamined = 0;
-    uint64_t executionTimeUs = 0;
+    size_t visited = 0;
+    size_t checkedEdges = 0;
+    uint64_t timeUs = 0;
 };
 
 struct BFSResult {
-    vector<int> traversalOrder;
-    vector<int> reachableDevices;
-    map<int, size_t> hopDistances;
+    vector<int> order;
+    vector<int> reachable;
+    map<int, size_t> distance;
     TraversalMetrics metrics;
 };
 
 struct DFSResult {
-    vector<int> traversalOrder;
-    vector<int> reachableDevices;
+    vector<int> order;
+    vector<int> reachable;
     TraversalMetrics metrics;
 };
 
 // Counts every adjacency entry inspected, including inactive connections and
 // connections leading to inactive devices. Such entries do not expand traversal.
-BFSResult breadthFirstSearch(const Graph& graph, int sourceId);
-DFSResult depthFirstSearch(const Graph& graph, int sourceId);
+BFSResult bfs(const Graph& graph, int sourceId);
+DFSResult dfs(const Graph& graph, int sourceId);
 
 }  // namespace cyberpath

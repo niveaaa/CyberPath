@@ -5,7 +5,6 @@
 #include "HashTable.h"
 
 #include <map>
-#include <optional>
 #include <string>
 #include <vector>
 
@@ -21,8 +20,8 @@ public:
     bool removeDevice(int id);
     bool containsDevice(int id) const noexcept;
     const Device& device(int id) const;
-    optional<int> deviceIdByName(const string& name) const;
-    optional<int> deviceIdByIpAddress(const string& ipAddress) const;
+    int findDeviceByName(const string& name) const;
+    int findDeviceByIp(const string& ipAddress) const;
     vector<Device> devices() const;
     size_t deviceCount() const noexcept;
 
@@ -36,7 +35,6 @@ public:
     size_t edgeCount() const noexcept;
 
     void setDeviceActive(int id, bool isActive);
-    void setRiskAttributes(int id, const RiskAttributes& attributes);
 
 private:
     map<int, Device> devices_;

@@ -21,8 +21,6 @@ cyberpath::Device makeDevice(int id, const string& name,
     device.type = "workstation";
     device.vulnerabilityScore = 25.0;
     device.exposureScore = 35.0;
-    device.connectivityScore = 50.0;
-    device.criticalityScore = 20.0;
     return device;
 }
 
@@ -66,11 +64,11 @@ void testEmptyGraphAndDeviceValidation() {
     graph.addDevice(makeDevice(1, "Gateway", "192.0.2.1"));
     check(graph.containsDevice(1), "added device is present");
     check(graph.device(1).name == "Gateway", "device fields are retained");
-    check(graph.deviceIdByName("Gateway") == optional<int>{1} &&
-              graph.deviceIdByIpAddress("192.0.2.1") == optional<int>{1},
+    check(graph.findDeviceByName("Gateway") == 1 &&
+              graph.findDeviceByIp("192.0.2.1") == 1,
           "custom hash indexes find devices by name and IP address");
-    check(!graph.deviceIdByName("Missing") &&
-              !graph.deviceIdByIpAddress("192.0.2.99"),
+    check(graph.findDeviceByName("Missing") == -1 &&
+              graph.findDeviceByIp("192.0.2.99") == -1,
           "custom hash indexes report missing names and IP addresses");
     expectInvalidArgument(
         [&] { graph.addDevice(makeDevice(1, "Duplicate ID", "192.0.2.2")); },
@@ -172,11 +170,11 @@ void testActivationAndRemoval() {
           "device removal cascades to all incident edges");
     check(!graph.containsDevice(2) && !graph.removeDevice(2),
           "removed device is absent and repeated removal is harmless");
-    check(!graph.deviceIdByName("Two") &&
-              !graph.deviceIdByIpAddress("192.0.2.2"),
+    check(graph.findDeviceByName("Two") == -1 &&
+              graph.findDeviceByIp("192.0.2.2") == -1,
           "device removal deletes its name and IP index entries");
     graph.addDevice(makeDevice(2, "Two", "192.0.2.2"));
-    check(graph.deviceIdByName("Two") == optional<int>{2},
+    check(graph.findDeviceByName("Two") == 2,
           "removed name and IP can be reused by a later device");
 }
 
