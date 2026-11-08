@@ -1,0 +1,47 @@
+{
+  "name": "Small Office Network",
+  "direction": "undirected",
+  "devices": [
+    {
+      "id": 1,
+      "name": "Office Router",
+      "ip_address": "192.0.2.11",
+      "type": "router",
+      "vulnerability_score": 20,
+      "exposure_score": 60,
+      "is_active": true
+    },
+    {
+      "id": 2,
+      "name": "Office Firewall",
+      "ip_address": "192.0.2.12",
+      "type": "firewall",
+      "vulnerability_score": 15,
+      "exposure_score": 35,
+      "is_active": true
+    },
+    {
+      "id": 3,
+      "name": "File Server",
+      "ip_address": "192.0.2.13",
+      "type": "server",
+      "vulnerability_score": 45,
+      "exposure_score": 40,
+      "is_active": true
+    },
+    {
+      "id": 4,
+      "name": "Staff Computer",
+      "ip_address": "192.0.2.14",
+      "type": "workstation",
+      "vulnerability_score": 30,
+      "exposure_score": 25,
+      "is_active": true
+    }
+  ],
+  "edges": [
+    { "source_id": 1, "destination_id": 2, "cost": 1.0, "is_active": true },
+    { "source_id": 2, "destination_id": 3, "cost": 2.0, "is_active": true },
+    { "source_id": 2, "destination_id": 4, "cost": 1.5, "is_active": true }
+  ]
+}
