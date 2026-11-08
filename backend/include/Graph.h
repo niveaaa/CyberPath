@@ -34,6 +34,7 @@ public:
     std::size_t edgeCount() const noexcept;
 
     void setDeviceActive(int id, bool isActive);
+    void setRiskAttributes(int id, const RiskAttributes& attributes);
 
 private:
     std::map<int, Device> devices_;

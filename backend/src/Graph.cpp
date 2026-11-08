@@ -184,6 +184,23 @@ void Graph::setDeviceActive(int id, bool isActive) {
     found->second.isActive = isActive;
 }
 
+void Graph::setRiskAttributes(int id, const RiskAttributes& attributes) {
+    const auto found = devices_.find(id);
+    if (found == devices_.end()) {
+        throw std::out_of_range("Device ID does not exist.");
+    }
+    validateScore(attributes.vulnerabilityScore, "vulnerability_score");
+    validateScore(attributes.exposureScore, "exposure_score");
+    validateScore(attributes.connectivityScore, "connectivity_score");
+    validateScore(attributes.criticalityScore, "criticality_score");
+
+    found->second.vulnerabilityScore = attributes.vulnerabilityScore;
+    found->second.exposureScore = attributes.exposureScore;
+    found->second.connectivityScore = attributes.connectivityScore;
+    found->second.criticalityScore = attributes.criticalityScore;
+    found->second.isCritical = attributes.isCritical;
+}
+
 void Graph::validateDevice(const Device& deviceValue) {
     if (deviceValue.id < 0) {
         throw std::invalid_argument("Device ID must be non-negative.");
