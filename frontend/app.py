@@ -12,6 +12,7 @@ import plotly.express as px
 import streamlit as st
 
 from frontend.services.cpp_runner import EngineError, run_algorithm
+from frontend.services.benchmark import run_benchmarks
 from frontend.services.network import PROJECT_ROOT, graph_figure, load_sample_network, validate_network
 
 
@@ -272,11 +273,51 @@ def _simulator():
         st.rerun()
 
 
+def _benchmark_page():
+    st.title("Benchmark Lab")
+    st.caption("Repeatable synthetic graphs compare C++ algorithm operation counts and timing.")
+    st.info("C++ algorithm time excludes JSON parsing and graph construction. End-to-end time includes Python serialization, file exchange, process startup, and engine work.")
+    with st.form("benchmark_controls"):
+        topology = st.selectbox("Topology", ["sparse", "dense"], help="Sparse graphs include a connected chain and seeded chords; dense graphs include every undirected pair.")
+        sizes = st.multiselect("Device counts", [10, 25, 50, 75, 100, 150], default=[10, 25, 50])
+        repeats = st.number_input("Trials per algorithm and size", min_value=1, max_value=10, value=3, step=1)
+        seed = st.number_input("Dataset seed", min_value=0, max_value=2_000_000_000, value=42, step=1)
+        submitted = st.form_submit_button("Run benchmarks", type="primary", disabled=not sizes)
+    if submitted:
+        try:
+            with st.spinner("Running C++ benchmarks…"):
+                st.session_state.benchmark_rows = run_benchmarks(
+                    sizes, topology=topology, repeats=int(repeats), seed=int(seed)
+                )
+            st.session_state.benchmark_description = f"{topology}, seed {seed}, {repeats} trial(s)"
+        except (ValueError, EngineError) as error:
+            _show_engine_error(error if isinstance(error, EngineError) else ValueError(str(error)))
+            return
+    rows = st.session_state.get("benchmark_rows")
+    if not rows:
+        st.info("Choose graph sizes and run a benchmark to see measured results.")
+        return
+    st.caption(f"Latest run: {st.session_state.get('benchmark_description', '')}. Repeat with the same settings to reproduce the dataset and operation counts; elapsed times vary with system load.")
+    frame = pd.DataFrame(rows)
+    st.dataframe(frame, hide_index=True, width="stretch")
+    time_tab, operations_tab = st.tabs(["Elapsed time", "Operation counts"])
+    with time_tab:
+        algorithm_time = px.line(frame, x="devices", y="median_algorithm_time_us", color="algorithm", markers=True, title="Median C++ algorithm time (microseconds)")
+        st.plotly_chart(algorithm_time, width="stretch", key="benchmark-algorithm-time")
+        total_time = px.line(frame, x="devices", y="median_end_to_end_ms", color="algorithm", markers=True, title="Median Python-to-C++ time (milliseconds)")
+        st.plotly_chart(total_time, width="stretch", key="benchmark-end-to-end-time")
+    with operations_tab:
+        operations = px.line(frame, x="devices", y="edges_examined", color="algorithm", markers=True, title="Median adjacency entries examined")
+        st.plotly_chart(operations, width="stretch", key="benchmark-operations")
+        st.caption("Operation counts are reported by the C++ implementation. Dijkstra also reports heap pushes and pops in the table.")
+    st.download_button("Download results as CSV", frame.to_csv(index=False), file_name="cyberpath_benchmarks.csv", mime="text/csv")
+
+
 def main() -> None:
     _initialize_state()
     st.sidebar.title("CyberPath")
     st.sidebar.caption("Defensive network analysis")
-    pages = ["Dashboard", "Network Editor", "Algorithm Lab", "Risk Analysis", "What-If Simulator"]
+    pages = ["Dashboard", "Network Editor", "Algorithm Lab", "Risk Analysis", "What-If Simulator", "Benchmark Lab"]
     page = st.sidebar.radio("Navigate", pages)
     executable = os.environ.get("CYBERPATH_ENGINE_PATH", "build/cyberpath_engine.exe (default)")
     st.sidebar.caption(f"C++ engine: {executable}")
@@ -293,6 +334,8 @@ def main() -> None:
         _risk_page(network)
     elif page == "What-If Simulator":
         _simulator()
+    elif page == "Benchmark Lab":
+        _benchmark_page()
 
 
 main()
