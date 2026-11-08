@@ -1,0 +1,25 @@
+{
+  "algorithm": "dijkstra",
+  "metrics": {
+    "algorithm_time_us": 17,
+    "devices": 4,
+    "edges": 3,
+    "edges_examined": 5,
+    "heap_pops": 4,
+    "heap_pushes": 4,
+    "request_time_us": 168,
+    "vertices_visited": 4
+  },
+  "result": {
+    "path": [
+      1,
+      2,
+      3
+    ],
+    "reachable": true,
+    "total_cost": 3.5
+  },
+  "schema_version": 1,
+  "steps": [],
+  "success": true
+}
