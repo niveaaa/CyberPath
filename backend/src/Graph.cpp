@@ -24,17 +24,17 @@ void Graph::addDevice(const Device& deviceValue) {
     if (devices_.find(deviceValue.id) != devices_.end()) {
         throw std::invalid_argument("Device ID already exists.");
     }
-    for (const auto& entry : devices_) {
-        if (entry.second.name == deviceValue.name) {
-            throw std::invalid_argument("Device name already exists.");
-        }
-        if (entry.second.ipAddress == deviceValue.ipAddress) {
-            throw std::invalid_argument("Device IP address already exists.");
-        }
+    if (deviceIdsByName_.contains(deviceValue.name)) {
+        throw std::invalid_argument("Device name already exists.");
+    }
+    if (deviceIdsByIpAddress_.contains(deviceValue.ipAddress)) {
+        throw std::invalid_argument("Device IP address already exists.");
     }
 
     devices_.emplace(deviceValue.id, deviceValue);
     adjacency_.emplace(deviceValue.id, std::vector<Edge>{});
+    deviceIdsByName_.insert(deviceValue.name, deviceValue.id);
+    deviceIdsByIpAddress_.insert(deviceValue.ipAddress, deviceValue.id);
 }
 
 bool Graph::removeDevice(int id) {
@@ -48,6 +48,8 @@ bool Graph::removeDevice(int id) {
         eraseNeighbor(adjacency_.at(edge.destinationId), id);
         --edgeCount_;
     }
+    deviceIdsByName_.erase(found->second.name);
+    deviceIdsByIpAddress_.erase(found->second.ipAddress);
     adjacency_.erase(incident);
     devices_.erase(found);
     return true;
@@ -63,6 +65,23 @@ const Device& Graph::device(int id) const {
         throw std::out_of_range("Device ID does not exist.");
     }
     return found->second;
+}
+
+std::optional<int> Graph::deviceIdByName(const std::string& name) const {
+    const int* id = deviceIdsByName_.find(name);
+    if (id == nullptr) {
+        return std::nullopt;
+    }
+    return *id;
+}
+
+std::optional<int> Graph::deviceIdByIpAddress(
+    const std::string& ipAddress) const {
+    const int* id = deviceIdsByIpAddress_.find(ipAddress);
+    if (id == nullptr) {
+        return std::nullopt;
+    }
+    return *id;
 }
 
 std::vector<Device> Graph::devices() const {

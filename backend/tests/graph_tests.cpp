@@ -64,6 +64,12 @@ void testEmptyGraphAndDeviceValidation() {
     graph.addDevice(makeDevice(1, "Gateway", "192.0.2.1"));
     check(graph.containsDevice(1), "added device is present");
     check(graph.device(1).name == "Gateway", "device fields are retained");
+    check(graph.deviceIdByName("Gateway") == std::optional<int>{1} &&
+              graph.deviceIdByIpAddress("192.0.2.1") == std::optional<int>{1},
+          "custom hash indexes find devices by name and IP address");
+    check(!graph.deviceIdByName("Missing") &&
+              !graph.deviceIdByIpAddress("192.0.2.99"),
+          "custom hash indexes report missing names and IP addresses");
     expectInvalidArgument(
         [&] { graph.addDevice(makeDevice(1, "Duplicate ID", "192.0.2.2")); },
         "duplicate ID rejected");
@@ -164,6 +170,12 @@ void testActivationAndRemoval() {
           "device removal cascades to all incident edges");
     check(!graph.containsDevice(2) && !graph.removeDevice(2),
           "removed device is absent and repeated removal is harmless");
+    check(!graph.deviceIdByName("Two") &&
+              !graph.deviceIdByIpAddress("192.0.2.2"),
+          "device removal deletes its name and IP index entries");
+    graph.addDevice(makeDevice(2, "Two", "192.0.2.2"));
+    check(graph.deviceIdByName("Two") == std::optional<int>{2},
+          "removed name and IP can be reused by a later device");
 }
 
 void testSortedDeviceSnapshot() {

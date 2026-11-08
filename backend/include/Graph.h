@@ -2,8 +2,11 @@
 
 #include "Device.h"
 #include "Edge.h"
+#include "HashTable.h"
 
 #include <map>
+#include <optional>
+#include <string>
 #include <vector>
 
 namespace cyberpath {
@@ -16,6 +19,8 @@ public:
     bool removeDevice(int id);
     bool containsDevice(int id) const noexcept;
     const Device& device(int id) const;
+    std::optional<int> deviceIdByName(const std::string& name) const;
+    std::optional<int> deviceIdByIpAddress(const std::string& ipAddress) const;
     std::vector<Device> devices() const;
     std::size_t deviceCount() const noexcept;
 
@@ -33,6 +38,8 @@ public:
 private:
     std::map<int, Device> devices_;
     std::map<int, std::vector<Edge>> adjacency_;
+    HashTable<std::string, int> deviceIdsByName_;
+    HashTable<std::string, int> deviceIdsByIpAddress_;
     std::size_t edgeCount_ = 0;
 
     static void validateDevice(const Device& device);
