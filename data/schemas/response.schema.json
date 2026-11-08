@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cyberpath.local/schemas/response.schema.json",
+  "title": "CyberPath engine response",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": ["schema_version", "success", "algorithm", "result", "metrics", "steps"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "success": { "const": true },
+        "algorithm": { "type": "string" },
+        "result": { "type": "object" },
+        "metrics": { "type": "object" },
+        "steps": { "type": "array" }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": ["schema_version", "success", "algorithm", "error"],
+      "properties": {
+        "schema_version": { "const": 1 },
+        "success": { "const": false },
+        "algorithm": { "type": ["string", "null"] },
+        "error": {
+          "type": "object",
+          "required": ["code", "message"],
+          "properties": { "code": { "type": "string" }, "message": { "type": "string" } },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cyberpath.local/schemas/request.schema.json",
+  "title": "CyberPath engine request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "algorithm", "parameters", "network"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "algorithm": { "enum": ["bfs", "dfs", "dijkstra", "risk"] },
+    "parameters": { "type": "object" },
+    "network": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["devices", "edges"],
+      "properties": {
+        "devices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "name", "ip_address", "type", "vulnerability_score", "exposure_score", "connectivity_score", "criticality_score"],
+            "properties": {
+              "id": { "type": "integer" },
+              "name": { "type": "string", "minLength": 1 },
+              "ip_address": { "type": "string", "minLength": 1 },
+              "type": { "type": "string", "minLength": 1 },
+              "vulnerability_score": { "type": "number", "minimum": 0, "maximum": 100 },
+              "exposure_score": { "type": "number", "minimum": 0, "maximum": 100 },
+              "connectivity_score": { "type": "number", "minimum": 0, "maximum": 100 },
+              "criticality_score": { "type": "number", "minimum": 0, "maximum": 100 },
+              "is_critical": { "type": "boolean" },
+              "is_active": { "type": "boolean" }
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["source_id", "destination_id", "cost"],
+            "properties": {
+              "source_id": { "type": "integer" },
+              "destination_id": { "type": "integer" },
+              "cost": { "type": "number", "minimum": 0 },
+              "is_active": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    { "if": { "properties": { "algorithm": { "const": "bfs" } } }, "then": { "properties": { "parameters": { "required": ["source_id"], "properties": { "source_id": { "type": "integer" } } } } } },
+    { "if": { "properties": { "algorithm": { "const": "dfs" } } }, "then": { "properties": { "parameters": { "required": ["source_id"], "properties": { "source_id": { "type": "integer" } } } } } },
+    { "if": { "properties": { "algorithm": { "const": "dijkstra" } } }, "then": { "properties": { "parameters": { "required": ["source_id", "target_id"], "properties": { "source_id": { "type": "integer" }, "target_id": { "type": "integer" } } } } } }
+  ]
+}
