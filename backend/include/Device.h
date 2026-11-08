@@ -17,7 +17,6 @@ struct Device {
     double vulnerabilityScore = 0.0;
     double exposureScore = 0.0;
     double riskScore = 0.0;
-    bool isCritical = false;
     bool isActive = true;
 };
 

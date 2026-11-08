@@ -49,9 +49,8 @@ Graph parseNetwork(const Json& request) {
         required(item, "type", Json::value_t::string);
         requiredNumber(item, "vulnerability_score");
         requiredNumber(item, "exposure_score");
-        if ((item.contains("is_critical") && !item.at("is_critical").is_boolean()) ||
-            (item.contains("is_active") && !item.at("is_active").is_boolean())) {
-            throw invalid_argument("Device active/critical flags must be booleans.");
+        if (item.contains("is_active") && !item.at("is_active").is_boolean()) {
+            throw invalid_argument("Device is_active flag must be a boolean.");
         }
         Device device;
         device.id = item.at("id").get<int>();
@@ -60,7 +59,6 @@ Graph parseNetwork(const Json& request) {
         device.type = item.at("type").get<string>();
         device.vulnerabilityScore = item.at("vulnerability_score").get<double>();
         device.exposureScore = item.at("exposure_score").get<double>();
-        device.isCritical = item.value("is_critical", false);
         device.isActive = item.value("is_active", true);
         graph.addDevice(device);
     }

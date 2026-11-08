@@ -63,9 +63,8 @@ def validate_network(network: Mapping[str, Any]) -> None:
                 raise ValueError(f"Device {identifier}: {field} must be a number from 0 to 100.") from error
             if not math.isfinite(score) or not 0 <= score <= 100:
                 raise ValueError(f"Device {identifier}: {field} must be from 0 to 100.")
-        for flag in ("is_active", "is_critical"):
-            if flag in device and not isinstance(device[flag], bool):
-                raise ValueError(f"Device {identifier}: {flag} must be true or false.")
+        if "is_active" in device and not isinstance(device["is_active"], bool):
+            raise ValueError(f"Device {identifier}: is_active must be true or false.")
 
     connections: set[tuple[int, int]] = set()
     for edge in edges:
@@ -139,7 +138,7 @@ def graph_figure(
         figure.add_trace(go.Scatter(
             x=[positions[int(d["id"])][0] for d in category_devices],
             y=[positions[int(d["id"])][1] for d in category_devices],
-            mode="markers+text", text=[d["name"] + (" ★" if d.get("is_critical", False) else "") for d in category_devices],
+            mode="markers+text", text=[d["name"] for d in category_devices],
             textposition="top center", textfont={"color": "#111827", "size": 14}, name=f"{category} risk",
             marker={"size": [24 if int(d["id"]) in highlighted_ids else 18 for d in category_devices],
                     "color": color, "line": {"color": "#1e293b", "width": 1}},
@@ -151,7 +150,7 @@ def graph_figure(
     if unranked:
         figure.add_trace(go.Scatter(
             x=[positions[int(d["id"])][0] for d in unranked], y=[positions[int(d["id"])][1] for d in unranked],
-            mode="markers+text", text=[d["name"] + (" ★" if d.get("is_critical", False) else "") for d in unranked],
+            mode="markers+text", text=[d["name"] for d in unranked],
             textposition="top center", textfont={"color": "#111827", "size": 14}, name="Device",
             marker={"size": [24 if int(d["id"]) in highlighted_ids else 18 for d in unranked], "color": "#60a5fa", "line": {"color": "#1e293b", "width": 1}},
             customdata=[[d["id"], d["ip_address"], d.get("type", ""), "Active" if d.get("is_active", True) else "Inactive"] for d in unranked],

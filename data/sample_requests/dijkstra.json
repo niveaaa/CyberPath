@@ -14,7 +14,6 @@
         "type": "router",
         "vulnerability_score": 20,
         "exposure_score": 80,
-        "is_critical": true,
         "is_active": true
       },
       {
@@ -24,7 +23,6 @@
         "type": "firewall",
         "vulnerability_score": 15,
         "exposure_score": 45,
-        "is_critical": true,
         "is_active": true
       },
       {
@@ -34,7 +32,6 @@
         "type": "server",
         "vulnerability_score": 55,
         "exposure_score": 35,
-        "is_critical": true,
         "is_active": true
       },
       {
@@ -44,14 +41,28 @@
         "type": "workstation",
         "vulnerability_score": 40,
         "exposure_score": 30,
-        "is_critical": false,
         "is_active": true
       }
     ],
     "edges": [
-      { "source_id": 1, "destination_id": 2, "cost": 1.0, "is_active": true },
-      { "source_id": 2, "destination_id": 3, "cost": 2.5, "is_active": true },
-      { "source_id": 2, "destination_id": 4, "cost": 1.5, "is_active": true }
+      {
+        "source_id": 1,
+        "destination_id": 2,
+        "cost": 1.0,
+        "is_active": true
+      },
+      {
+        "source_id": 2,
+        "destination_id": 3,
+        "cost": 2.5,
+        "is_active": true
+      },
+      {
+        "source_id": 2,
+        "destination_id": 4,
+        "cost": 1.5,
+        "is_active": true
+      }
     ]
   }
 }

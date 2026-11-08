@@ -53,7 +53,7 @@ def _draw_network(network, risks=None, highlighted=None, highlighted_path=None, 
         key=chart_key,
         config={"displayModeBar": False},
     )
-    st.caption("Node colors show backend risk categories when available. â˜… marks a critical asset; dashed edges are inactive.")
+    st.caption("Node colors show risk categories when available; dashed connections are inactive.")
 
 
 def _network_editor():
@@ -61,11 +61,23 @@ def _network_editor():
     st.caption("Add a device in the devices table, then add a connection in the connections table. Save the network before running an algorithm.")
     device_frame = pd.DataFrame(st.session_state.network["devices"], columns=[
         "id", "name", "ip_address", "type", "vulnerability_score", "exposure_score",
-        "is_critical", "is_active",
+        "is_active",
     ])
-    edge_frame = pd.DataFrame(st.session_state.network["edges"], columns=[
-        "source_id", "destination_id", "cost", "is_active",
-    ])
+    device_names = {
+        int(device["id"]): device["name"]
+        for device in st.session_state.network["devices"]
+    }
+    edge_frame = pd.DataFrame([
+        {
+            "source_id": edge["source_id"],
+            "source_name": device_names.get(int(edge["source_id"]), "Unknown device"),
+            "destination_id": edge["destination_id"],
+            "destination_name": device_names.get(int(edge["destination_id"]), "Unknown device"),
+            "cost": edge["cost"],
+            "is_active": edge.get("is_active", True),
+        }
+        for edge in st.session_state.network["edges"]
+    ], columns=["source_id", "source_name", "destination_id", "destination_name", "cost", "is_active"])
     left, right = st.columns(2)
     with left:
         edited_devices = st.data_editor(
@@ -79,16 +91,25 @@ def _network_editor():
     with right:
         edited_edges = st.data_editor(
             edge_frame, num_rows="dynamic", hide_index=True, key="edge_editor",
-            column_config={"source_id": st.column_config.NumberColumn(step=1),
-                           "destination_id": st.column_config.NumberColumn(step=1),
+            disabled=["source_name", "destination_name"],
+            column_config={"source_id": st.column_config.NumberColumn("Source ID", step=1),
+                           "source_name": st.column_config.TextColumn("Source name"),
+                           "destination_id": st.column_config.NumberColumn("Destination ID", step=1),
+                           "destination_name": st.column_config.TextColumn("Destination name"),
                            "cost": st.column_config.NumberColumn("Cost (Dijkstra weight)", min_value=0,
                                                                   help="Enter the connection's cost. It is chosen by you and is not calculated from device risk scores.")},
         )
         st.caption("The graph view arranges devices automatically. Connections and their costs define routes; risk scores are separate.")
     if st.button("Save network", type="primary"):
         try:
-            devices = edited_devices.dropna(subset=["id", "name", "ip_address", "type"]).to_dict("records")
-            edges = edited_edges.dropna(subset=["source_id", "destination_id", "cost"]).to_dict("records")
+            devices = edited_devices.dropna(
+                subset=["id", "name", "ip_address", "type"]
+            ).fillna({"is_active": True}).to_dict("records")
+            edges = edited_edges.dropna(
+                subset=["source_id", "destination_id", "cost"]
+            )[["source_id", "destination_id", "cost", "is_active"]].fillna(
+                {"is_active": True}
+            ).to_dict("records")
             candidate = {"devices": devices, "edges": edges}
             validate_network(candidate)
             st.session_state.network = candidate

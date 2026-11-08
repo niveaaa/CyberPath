@@ -27,7 +27,6 @@
               "type": { "type": "string", "minLength": 1 },
               "vulnerability_score": { "type": "number", "minimum": 0, "maximum": 100 },
               "exposure_score": { "type": "number", "minimum": 0, "maximum": 100 },
-              "is_critical": { "type": "boolean" },
               "is_active": { "type": "boolean" }
             }
           }

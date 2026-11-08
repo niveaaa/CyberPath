@@ -13,8 +13,7 @@ namespace {
 
 int failures = 0;
 
-cyberpath::Device makeDevice(int id, double vulnerability, double exposure,
-                             bool isCritical = false) {
+cyberpath::Device makeDevice(int id, double vulnerability, double exposure) {
     cyberpath::Device device;
     device.id = id;
     device.name = "Device " + to_string(id);
@@ -22,7 +21,6 @@ cyberpath::Device makeDevice(int id, double vulnerability, double exposure,
     device.type = "server";
     device.vulnerabilityScore = vulnerability;
     device.exposureScore = exposure;
-    device.isCritical = isCritical;
     return device;
 }
 
@@ -45,7 +43,7 @@ void expectInvalidArgument(const function<void()>& action,
 }
 
 void testRiskScoreAndLevels() {
-    const cyberpath::Device device = makeDevice(1, 100, 80, true);
+    const cyberpath::Device device = makeDevice(1, 100, 80);
     check(cyberpath::riskScore(device) == 90.0,
           "risk score is the average of vulnerability and exposure");
     check(cyberpath::assessRisk(device).category == cyberpath::RiskCategory::High,

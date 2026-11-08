@@ -9,8 +9,9 @@ class FrontendNetworkTests(unittest.TestCase):
     def test_sample_is_valid_and_has_devices_and_connections(self):
         network = load_sample_network("campus_network.json")
         validate_network(network)
-        self.assertEqual(len(network["devices"]), 4)
-        self.assertEqual(len(network["edges"]), 3)
+        self.assertEqual(len(network["devices"]), 7)
+        self.assertEqual(len(network["edges"]), 10)
+        self.assertEqual(sum(not edge["is_active"] for edge in network["edges"]), 1)
 
     def test_duplicate_device_id_is_rejected(self):
         network = load_sample_network("campus_network.json")
