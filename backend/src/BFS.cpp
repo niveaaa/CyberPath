@@ -8,9 +8,12 @@ using namespace std;
 
 namespace cyberpath {
 
-BFSResult bfs(const Graph& graph, int sourceId) {
+BFSResult bfs(const Graph& graph, int sourceId, int targetId, bool stopAtTarget) {
     if (!graph.device(sourceId).isActive) {
         throw invalid_argument("Traversal source device is inactive.");
+    }
+    if (stopAtTarget) {
+        graph.device(targetId);
     }
 
     auto start = chrono::steady_clock::now();
@@ -24,6 +27,10 @@ BFSResult bfs(const Graph& graph, int sourceId) {
         int current = waiting.front();
         waiting.pop();
         result.order.push_back(current);
+        if (stopAtTarget && current == targetId) {
+            result.targetFound = true;
+            break;
+        }
 
         for (const Edge& edge : graph.neighbors(current)) {
             result.metrics.checkedEdges++;
@@ -44,6 +51,14 @@ BFSResult bfs(const Graph& graph, int sourceId) {
     result.metrics.timeUs = chrono::duration_cast<chrono::microseconds>(
         chrono::steady_clock::now() - start).count();
     return result;
+}
+
+BFSResult bfs(const Graph& graph, int sourceId) {
+    return bfs(graph, sourceId, 0, false);
+}
+
+BFSResult bfs(const Graph& graph, int sourceId, int targetId) {
+    return bfs(graph, sourceId, targetId, true);
 }
 
 }  // namespace cyberpath

@@ -92,6 +92,9 @@ Json handleValidRequest(const Json& request, string& algorithm) {
     }
     if (algorithm == "dijkstra") {
         requiredInteger(params, "target_id");
+    } else if ((algorithm == "bfs" || algorithm == "dfs") &&
+               params.contains("target_id")) {
+        requiredInteger(params, "target_id");
     }
     const auto start = chrono::steady_clock::now();
     const Graph graph = parseNetwork(request);
@@ -100,17 +103,31 @@ Json handleValidRequest(const Json& request, string& algorithm) {
     Json steps = Json::array();
 
     if (algorithm == "bfs") {
-        const auto value = bfs(graph, params.at("source_id").get<int>());
+        const int sourceId = params.at("source_id").get<int>();
+        const auto value = params.contains("target_id")
+            ? bfs(graph, sourceId, params.at("target_id").get<int>())
+            : bfs(graph, sourceId);
         result = {{"traversal_order", value.order},
                   {"reachable_devices", value.reachable},
                   {"hop_distances", value.distance}};
+        if (params.contains("target_id")) {
+            result["target_reachable"] = value.targetFound;
+            result["target_id"] = params.at("target_id");
+        }
         metrics.update({{"vertices_visited", value.metrics.visited},
                         {"edges_examined", value.metrics.checkedEdges},
                         {"algorithm_time_us", value.metrics.timeUs}});
     } else if (algorithm == "dfs") {
-        const auto value = dfs(graph, params.at("source_id").get<int>());
+        const int sourceId = params.at("source_id").get<int>();
+        const auto value = params.contains("target_id")
+            ? dfs(graph, sourceId, params.at("target_id").get<int>())
+            : dfs(graph, sourceId);
         result = {{"traversal_order", value.order},
                   {"reachable_devices", value.reachable}};
+        if (params.contains("target_id")) {
+            result["target_reachable"] = value.targetFound;
+            result["target_id"] = params.at("target_id");
+        }
         metrics.update({{"vertices_visited", value.metrics.visited},
                         {"edges_examined", value.metrics.checkedEdges},
                         {"algorithm_time_us", value.metrics.timeUs}});

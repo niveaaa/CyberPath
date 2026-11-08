@@ -50,8 +50,8 @@
     }
   },
   "allOf": [
-    { "if": { "properties": { "algorithm": { "const": "bfs" } } }, "then": { "properties": { "parameters": { "required": ["source_id"], "properties": { "source_id": { "type": "integer" } } } } } },
-    { "if": { "properties": { "algorithm": { "const": "dfs" } } }, "then": { "properties": { "parameters": { "required": ["source_id"], "properties": { "source_id": { "type": "integer" } } } } } },
+    { "if": { "properties": { "algorithm": { "const": "bfs" } } }, "then": { "properties": { "parameters": { "required": ["source_id"], "properties": { "source_id": { "type": "integer" }, "target_id": { "type": "integer" } } } } } },
+    { "if": { "properties": { "algorithm": { "const": "dfs" } } }, "then": { "properties": { "parameters": { "required": ["source_id"], "properties": { "source_id": { "type": "integer" }, "target_id": { "type": "integer" } } } } } },
     { "if": { "properties": { "algorithm": { "const": "dijkstra" } } }, "then": { "properties": { "parameters": { "required": ["source_id", "target_id"], "properties": { "source_id": { "type": "integer" }, "target_id": { "type": "integer" } } } } } }
   ]
 }

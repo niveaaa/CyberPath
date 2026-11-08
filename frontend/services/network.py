@@ -129,7 +129,7 @@ def graph_figure(
             showlegend=False,
         ))
         figure.add_annotation(x=(x1 + x2) / 2, y=(y1 + y2) / 2, text=str(edge["cost"]), showarrow=False,
-                              font={"size": 11, "color": "#475569"}, bgcolor="white")
+                              font={"size": 13, "color": "#111827"}, bgcolor="#ffffff", bordercolor="#64748b", borderwidth=1)
 
     colors = {"High": "#dc2626", "Moderate": "#f59e0b", "Low": "#16a34a"}
     for category, color in colors.items():
@@ -140,7 +140,7 @@ def graph_figure(
             x=[positions[int(d["id"])][0] for d in category_devices],
             y=[positions[int(d["id"])][1] for d in category_devices],
             mode="markers+text", text=[d["name"] + (" ★" if d.get("is_critical", False) else "") for d in category_devices],
-            textposition="top center", name=f"{category} risk",
+            textposition="top center", textfont={"color": "#111827", "size": 14}, name=f"{category} risk",
             marker={"size": [24 if int(d["id"]) in highlighted_ids else 18 for d in category_devices],
                     "color": color, "line": {"color": "#1e293b", "width": 1}},
             customdata=[[d["id"], d["ip_address"], d.get("type", ""), "Active" if d.get("is_active", True) else "Inactive"] for d in category_devices],
@@ -152,12 +152,23 @@ def graph_figure(
         figure.add_trace(go.Scatter(
             x=[positions[int(d["id"])][0] for d in unranked], y=[positions[int(d["id"])][1] for d in unranked],
             mode="markers+text", text=[d["name"] + (" ★" if d.get("is_critical", False) else "") for d in unranked],
-            textposition="top center", name="Device",
+            textposition="top center", textfont={"color": "#111827", "size": 14}, name="Device",
             marker={"size": [24 if int(d["id"]) in highlighted_ids else 18 for d in unranked], "color": "#60a5fa", "line": {"color": "#1e293b", "width": 1}},
             customdata=[[d["id"], d["ip_address"], d.get("type", ""), "Active" if d.get("is_active", True) else "Inactive"] for d in unranked],
             hovertemplate="%{text}<br>ID %{customdata[0]}<br>%{customdata[1]}<br>%{customdata[2]}<br>%{customdata[3]}<extra></extra>",
         ))
-    figure.update_layout(height=470, margin={"l": 10, "r": 10, "t": 20, "b": 10},
+    selected_devices = [device for device in ordered if int(device["id"]) in highlighted_ids]
+    if selected_devices:
+        figure.add_trace(go.Scatter(
+            x=[positions[int(device["id"])][0] for device in selected_devices],
+            y=[positions[int(device["id"])][1] for device in selected_devices],
+            mode="markers", name="Visited / path",
+            marker={"symbol": "circle-open", "size": 31,
+                    "line": {"color": "#7c3aed", "width": 4}},
+            hoverinfo="skip",
+        ))
+    figure.update_layout(height=500, margin={"l": 10, "r": 10, "t": 20, "b": 10},
                          xaxis={"visible": False, "range": [-1.35, 1.35]}, yaxis={"visible": False, "range": [-1.35, 1.35], "scaleanchor": "x"},
-                         legend={"orientation": "h", "y": -0.08}, plot_bgcolor="white")
+                         legend={"orientation": "h", "y": -0.08, "font": {"color": "#111827", "size": 13}},
+                         plot_bgcolor="#f1f5f9", paper_bgcolor="#f1f5f9", font={"color": "#111827"})
     return figure
