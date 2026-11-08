@@ -7,20 +7,22 @@
 #include <optional>
 #include <vector>
 
+using namespace std;
+
 namespace cyberpath {
 
 struct DijkstraMetrics {
-    std::size_t verticesVisited = 0;
-    std::size_t edgesExamined = 0;
-    std::size_t heapPushes = 0;
-    std::size_t heapPops = 0;
-    std::uint64_t executionTimeUs = 0;
+    size_t verticesVisited = 0;
+    size_t edgesExamined = 0;
+    size_t heapPushes = 0;
+    size_t heapPops = 0;
+    uint64_t executionTimeUs = 0;
 };
 
 struct DijkstraResult {
     bool reachable = false;
-    std::vector<int> path;
-    std::optional<double> totalCost;
+    vector<int> path;
+    optional<double> totalCost;
     DijkstraMetrics metrics;
 };
 

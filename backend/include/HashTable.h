@@ -6,18 +6,20 @@
 #include <utility>
 #include <vector>
 
+using namespace std;
+
 namespace cyberpath {
 
 // Separate-chaining hash table. Collision count records each new-key insert
 // into a bucket that was already occupied; updates and rehashing do not count.
-template <typename Key, typename Value, typename Hasher = std::hash<Key>>
+template <typename Key, typename Value, typename Hasher = hash<Key>>
 class HashTable {
 public:
-    explicit HashTable(std::size_t initialBucketCount = 8,
+    explicit HashTable(size_t initialBucketCount = 8,
                        Hasher hasher = Hasher{})
-        : buckets_(initialBucketCount), hasher_(std::move(hasher)) {
+        : buckets_(initialBucketCount), hasher_(move(hasher)) {
         if (initialBucketCount == 0) {
-            throw std::invalid_argument("Hash table needs at least one bucket.");
+            throw invalid_argument("Hash table needs at least one bucket.");
         }
     }
 
@@ -76,37 +78,37 @@ public:
         return false;
     }
 
-    std::size_t size() const noexcept { return size_; }
+    size_t size() const noexcept { return size_; }
     bool empty() const noexcept { return size_ == 0; }
-    std::size_t collisionCount() const noexcept { return collisionCount_; }
-    std::size_t bucketCount() const noexcept { return buckets_.size(); }
+    size_t collisionCount() const noexcept { return collisionCount_; }
+    size_t bucketCount() const noexcept { return buckets_.size(); }
     double loadFactor() const noexcept {
         return static_cast<double>(size_) / static_cast<double>(buckets_.size());
     }
 
 private:
     static constexpr double kMaximumLoadFactor = 0.75;
-    using Entry = std::pair<Key, Value>;
+    using Entry = pair<Key, Value>;
 
-    std::vector<std::vector<Entry>> buckets_;
+    vector<vector<Entry>> buckets_;
     Hasher hasher_;
-    std::size_t size_ = 0;
-    std::size_t collisionCount_ = 0;
+    size_t size_ = 0;
+    size_t collisionCount_ = 0;
 
-    std::size_t bucketIndex(const Key& key) const {
-        return static_cast<std::size_t>(hasher_(key)) % buckets_.size();
+    size_t bucketIndex(const Key& key) const {
+        return static_cast<size_t>(hasher_(key)) % buckets_.size();
     }
 
-    void rehash(std::size_t newBucketCount) {
-        std::vector<std::vector<Entry>> resized(newBucketCount);
+    void rehash(size_t newBucketCount) {
+        vector<vector<Entry>> resized(newBucketCount);
         for (auto& bucket : buckets_) {
             for (auto& entry : bucket) {
-                const std::size_t index =
-                    static_cast<std::size_t>(hasher_(entry.first)) % newBucketCount;
-                resized[index].push_back(std::move(entry));
+                const size_t index =
+                    static_cast<size_t>(hasher_(entry.first)) % newBucketCount;
+                resized[index].push_back(move(entry));
             }
         }
-        buckets_ = std::move(resized);
+        buckets_ = move(resized);
     }
 };
 

@@ -2,6 +2,8 @@
 
 #include <string>
 
+using namespace std;
+
 namespace cyberpath {
 
 inline constexpr double kMinimumComponentScore = 0.0;
@@ -17,9 +19,9 @@ struct RiskAttributes {
 
 struct Device {
     int id = 0;
-    std::string name;
-    std::string ipAddress;
-    std::string type;
+    string name;
+    string ipAddress;
+    string type;
     double vulnerabilityScore = 0.0;
     double exposureScore = 0.0;
     double connectivityScore = 0.0;

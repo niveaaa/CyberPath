@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+using namespace std;
+
 namespace {
 
 int failures = 0;
@@ -17,8 +19,8 @@ cyberpath::Device makeDevice(int id, double vulnerability, double exposure,
                              bool isCritical = false) {
     cyberpath::Device device;
     device.id = id;
-    device.name = "Device " + std::to_string(id);
-    device.ipAddress = "192.0.2." + std::to_string(id);
+    device.name = "Device " + to_string(id);
+    device.ipAddress = "192.0.2." + to_string(id);
     device.type = "server";
     device.vulnerabilityScore = vulnerability;
     device.exposureScore = exposure;
@@ -28,30 +30,30 @@ cyberpath::Device makeDevice(int id, double vulnerability, double exposure,
     return device;
 }
 
-void check(bool condition, const std::string& message) {
+void check(bool condition, const string& message) {
     if (!condition) {
         ++failures;
-        std::cerr << "FAIL: " << message << '\n';
+        cerr << "FAIL: " << message << '\n';
     }
 }
 
-void expectInvalidArgument(const std::function<void()>& action,
-                           const std::string& message) {
+void expectInvalidArgument(const function<void()>& action,
+                           const string& message) {
     try {
         action();
         check(false, message + " (did not throw)");
-    } catch (const std::invalid_argument&) {
+    } catch (const invalid_argument&) {
     } catch (...) {
         check(false, message + " (threw wrong exception)");
     }
 }
 
-void expectOutOfRange(const std::function<void()>& action,
-                      const std::string& message) {
+void expectOutOfRange(const function<void()>& action,
+                      const string& message) {
     try {
         action();
         check(false, message + " (did not throw)");
-    } catch (const std::out_of_range&) {
+    } catch (const out_of_range&) {
     } catch (...) {
         check(false, message + " (threw wrong exception)");
     }
@@ -75,7 +77,7 @@ void testFormulaCategoriesAndValidation() {
     check(cyberpath::assessRisk(device).category == cyberpath::RiskCategory::High,
           "risk assessment assigns high category");
     check(cyberpath::riskCategoryName(cyberpath::RiskCategory::Moderate) ==
-              std::string("Moderate"),
+              string("Moderate"),
           "risk categories have readable names");
     check(cyberpath::classifyRisk(0.0) == cyberpath::RiskCategory::Low &&
               cyberpath::classifyRisk(33.999) == cyberpath::RiskCategory::Low,
@@ -125,7 +127,7 @@ void testBaselineSimulationComparisonAndReset() {
           "initial simulation matches baseline reachability");
     check(comparison.baseline.dijkstra.totalCost == 3.0 &&
               comparison.simulated.dijkstra.path ==
-                  std::vector<int>({1, 2, 3}),
+                  vector<int>({1, 2, 3}),
           "initial simulation matches baseline minimum path");
     check(comparison.baseline.rankedRisks.size() == 3 &&
               comparison.simulated.rankedRisks.size() == 3,
@@ -198,9 +200,9 @@ int main() {
     testBaselineSimulationComparisonAndReset();
     testInactiveSourcesTargetsAndInvalidChanges();
     if (failures != 0) {
-        std::cerr << failures << " risk/simulation check(s) failed.\n";
+        cerr << failures << " risk/simulation check(s) failed.\n";
         return 1;
     }
-    std::cout << "All risk and simulation checks passed.\n";
+    cout << "All risk and simulation checks passed.\n";
     return 0;
 }

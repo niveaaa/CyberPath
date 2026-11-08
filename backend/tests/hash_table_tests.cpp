@@ -5,34 +5,36 @@
 #include <stdexcept>
 #include <string>
 
+using namespace std;
+
 namespace {
 
 int failures = 0;
 
 struct ConstantHash {
-    std::size_t operator()(const std::string&) const noexcept { return 0; }
+    size_t operator()(const string&) const noexcept { return 0; }
 };
 
-void check(bool condition, const std::string& message) {
+void check(bool condition, const string& message) {
     if (!condition) {
         ++failures;
-        std::cerr << "FAIL: " << message << '\n';
+        cerr << "FAIL: " << message << '\n';
     }
 }
 
-void expectInvalidArgument(const std::function<void()>& action,
-                           const std::string& message) {
+void expectInvalidArgument(const function<void()>& action,
+                           const string& message) {
     try {
         action();
         check(false, message + " (did not throw)");
-    } catch (const std::invalid_argument&) {
+    } catch (const invalid_argument&) {
     } catch (...) {
         check(false, message + " (threw wrong exception)");
     }
 }
 
 void testCollisionLookupUpdateAndDelete() {
-    cyberpath::HashTable<std::string, int, ConstantHash> table(4);
+    cyberpath::HashTable<string, int, ConstantHash> table(4);
     check(table.empty() && table.size() == 0 && table.loadFactor() == 0.0,
           "new hash table has no entries");
     check(table.insert("alpha", 1), "insert reports a new key");
@@ -61,7 +63,7 @@ void testCollisionLookupUpdateAndDelete() {
 }
 
 void testResizeAndLoadFactor() {
-    cyberpath::HashTable<int, std::string> table(2);
+    cyberpath::HashTable<int, string> table(2);
     table.insert(1, "one");
     check(table.loadFactor() == 0.5, "load factor uses size divided by buckets");
     table.insert(2, "two");
@@ -83,9 +85,9 @@ int main() {
     testCollisionLookupUpdateAndDelete();
     testResizeAndLoadFactor();
     if (failures != 0) {
-        std::cerr << failures << " hash table check(s) failed.\n";
+        cerr << failures << " hash table check(s) failed.\n";
         return 1;
     }
-    std::cout << "All hash table checks passed.\n";
+    cout << "All hash table checks passed.\n";
     return 0;
 }

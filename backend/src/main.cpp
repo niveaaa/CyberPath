@@ -4,17 +4,19 @@
 #include <iostream>
 #include <string>
 
+using namespace std;
+
 int main(int argc, char* argv[]) {
     if (argc != 3) {
-        std::cerr << "Usage: cyberpath_engine <request.json> <response.json>\n";
+        cerr << "Usage: cyberpath_engine <request.json> <response.json>\n";
         return 2;
     }
 
-    const std::string requestPath = argv[1];
-    const std::string responsePath = argv[2];
+    const string requestPath = argv[1];
+    const string responsePath = argv[2];
     cyberpath::Json response;
     try {
-        std::ifstream requestFile(requestPath);
+        ifstream requestFile(requestPath);
         if (!requestFile) {
             response = {{"schema_version", 1}, {"success", false},
                         {"algorithm", nullptr},
@@ -32,24 +34,24 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        std::ofstream responseFile(responsePath, std::ios::trunc);
+        ofstream responseFile(responsePath, ios::trunc);
         if (!responseFile) {
-            std::cerr << "Could not open response file: " << responsePath << '\n';
+            cerr << "Could not open response file: " << responsePath << '\n';
             return 2;
         }
         responseFile << response.dump(2) << '\n';
         responseFile.close();
         if (!responseFile) {
-            std::cerr << "Could not write response file: " << responsePath << '\n';
+            cerr << "Could not write response file: " << responsePath << '\n';
             return 2;
         }
         if (!response.value("success", false)) {
-            std::cerr << response.at("error").at("message").get<std::string>() << '\n';
+            cerr << response.at("error").at("message").get<string>() << '\n';
             return 1;
         }
         return 0;
-    } catch (const std::exception& error) {
-        std::cerr << "Engine error: " << error.what() << '\n';
+    } catch (const exception& error) {
+        cerr << "Engine error: " << error.what() << '\n';
         return 2;
     }
 }

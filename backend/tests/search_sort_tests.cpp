@@ -11,23 +11,25 @@
 #include <utility>
 #include <vector>
 
+using namespace std;
+
 namespace {
 
 int failures = 0;
 
-void check(bool condition, const std::string& message) {
+void check(bool condition, const string& message) {
     if (!condition) {
         ++failures;
-        std::cerr << "FAIL: " << message << '\n';
+        cerr << "FAIL: " << message << '\n';
     }
 }
 
-void expectInvalidArgument(const std::function<void()>& action,
-                           const std::string& message) {
+void expectInvalidArgument(const function<void()>& action,
+                           const string& message) {
     try {
         action();
         check(false, message + " (did not throw)");
-    } catch (const std::invalid_argument&) {
+    } catch (const invalid_argument&) {
     } catch (...) {
         check(false, message + " (threw wrong exception)");
     }
@@ -35,20 +37,20 @@ void expectInvalidArgument(const std::function<void()>& action,
 
 template <typename T>
 void checkSortedOutput(const cyberpath::SortResult<T>& result,
-                       const std::vector<T>& expected,
-                       const std::string& algorithm) {
+                       const vector<T>& expected,
+                       const string& algorithm) {
     check(result.values == expected, algorithm + " returns expected ordered data");
 }
 
 void testLinearSearch() {
-    const std::vector<int> values{8, 3, 5, 3, 10};
+    const vector<int> values{8, 3, 5, 3, 10};
     const auto found = cyberpath::linearSearch(values, 5);
     check(found.found() && found.index == 2 && found.comparisons == 3,
           "linear search reports first match and comparisons");
     const auto missing = cyberpath::linearSearch(values, 7);
     check(!missing.found() && !missing.index && missing.comparisons == 5,
           "linear search reports an absent item");
-    const std::vector<int> empty;
+    const vector<int> empty;
     const auto emptyResult = cyberpath::linearSearch(empty, 1);
     check(!emptyResult.found() && emptyResult.comparisons == 0,
           "linear search handles empty input");
@@ -71,8 +73,8 @@ void testBinarySearch() {
 }
 
 void testSortAlgorithmsOnCommonInputs() {
-    const std::vector<int> input{5, -1, 3, 3, 0, 9, -4};
-    const std::vector<int> expected{-4, -1, 0, 3, 3, 5, 9};
+    const vector<int> input{5, -1, 3, 3, 0, 9, -4};
+    const vector<int> expected{-4, -1, 0, 3, 3, 5, 9};
     const auto bubble = cyberpath::bubbleSort(input);
     const auto insertion = cyberpath::insertionSort(input);
     const auto merge = cyberpath::mergeSort(input);
@@ -93,23 +95,23 @@ void testSortAlgorithmsOnCommonInputs() {
     check(quick.metrics.comparisons > 0 && quick.metrics.moves > 0,
           "quicksort reports comparisons and pivot/swap moves");
 
-    const std::vector<int> empty;
+    const vector<int> empty;
     check(cyberpath::bubbleSort(empty).values.empty(),
           "bubble sort handles empty input");
-    check(cyberpath::insertionSort(std::vector<int>{1}).values ==
-              std::vector<int>{1},
+    check(cyberpath::insertionSort(vector<int>{1}).values ==
+              vector<int>{1},
           "insertion sort handles single-element input");
-    const std::vector<int> reversed{5, 4, 3, 2, 1};
-    const std::vector<int> ordered{1, 2, 3, 4, 5};
+    const vector<int> reversed{5, 4, 3, 2, 1};
+    const vector<int> ordered{1, 2, 3, 4, 5};
     check(cyberpath::mergeSort(reversed).values == ordered,
           "merge sort handles reverse-sorted input");
-    check(cyberpath::quickSort(std::vector<int>(100, 7)).values ==
-              std::vector<int>(100, 7),
+    check(cyberpath::quickSort(vector<int>(100, 7)).values ==
+              vector<int>(100, 7),
           "quicksort handles duplicate-heavy input");
 }
 
 void testCustomComparatorsAndStability() {
-    const std::vector<std::pair<int, char>> records{{2, 'a'}, {1, 'b'}, {2, 'c'}};
+    const vector<pair<int, char>> records{{2, 'a'}, {1, 'b'}, {2, 'c'}};
     const auto byFirst = [](const auto& lhs, const auto& rhs) {
         return lhs.first < rhs.first;
     };
@@ -124,7 +126,7 @@ void testCustomComparatorsAndStability() {
     cyberpath::Device second;
     second.id = 2;
     second.riskScore = 20;
-    const std::vector<cyberpath::Device> devices{first, second};
+    const vector<cyberpath::Device> devices{first, second};
     const auto byRisk = [](const auto& lhs, const auto& rhs) {
         return lhs.riskScore < rhs.riskScore;
     };
@@ -135,12 +137,12 @@ void testCustomComparatorsAndStability() {
 
 void testSmallPermutationCoverage() {
     for (int count = 0; count <= 6; ++count) {
-        std::vector<int> values(static_cast<std::size_t>(count));
-        std::iota(values.begin(), values.end(), 0);
+        vector<int> values(static_cast<size_t>(count));
+        iota(values.begin(), values.end(), 0);
         do {
             const auto expected = values;
-            std::vector<int> ordered = expected;
-            std::sort(ordered.begin(), ordered.end());
+            vector<int> ordered = expected;
+            sort(ordered.begin(), ordered.end());
             check(cyberpath::bubbleSort(values).values == ordered,
                   "bubble sort orders a permutation");
             check(cyberpath::insertionSort(values).values == ordered,
@@ -149,7 +151,7 @@ void testSmallPermutationCoverage() {
                   "merge sort orders a permutation");
             check(cyberpath::quickSort(values).values == ordered,
                   "quicksort orders a permutation");
-        } while (std::next_permutation(values.begin(), values.end()));
+        } while (next_permutation(values.begin(), values.end()));
     }
 }
 
@@ -162,9 +164,9 @@ int main() {
     testCustomComparatorsAndStability();
     testSmallPermutationCoverage();
     if (failures != 0) {
-        std::cerr << failures << " search/sort check(s) failed.\n";
+        cerr << failures << " search/sort check(s) failed.\n";
         return 1;
     }
-    std::cout << "All search and sort checks passed.\n";
+    cout << "All search and sort checks passed.\n";
     return 0;
 }

@@ -6,13 +6,15 @@
 
 #include <vector>
 
+using namespace std;
+
 namespace cyberpath {
 
 struct NetworkAnalysis {
     BFSResult bfs;
     DFSResult dfs;
     DijkstraResult dijkstra;
-    std::vector<RiskAssessment> rankedRisks;
+    vector<RiskAssessment> rankedRisks;
 };
 
 struct SimulationComparison {

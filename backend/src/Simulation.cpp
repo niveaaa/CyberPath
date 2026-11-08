@@ -1,5 +1,7 @@
 #include "Simulation.h"
 
+using namespace std;
+
 namespace cyberpath {
 
 NetworkSimulation::NetworkSimulation(const Graph& baseline)

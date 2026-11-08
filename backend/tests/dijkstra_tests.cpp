@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+using namespace std;
+
 namespace {
 
 int failures = 0;
@@ -15,53 +17,53 @@ int failures = 0;
 cyberpath::Device makeDevice(int id) {
     cyberpath::Device device;
     device.id = id;
-    device.name = "Device " + std::to_string(id);
-    device.ipAddress = "192.0.2." + std::to_string(id);
+    device.name = "Device " + to_string(id);
+    device.ipAddress = "192.0.2." + to_string(id);
     device.type = "server";
     return device;
 }
 
-void check(bool condition, const std::string& message) {
+void check(bool condition, const string& message) {
     if (!condition) {
         ++failures;
-        std::cerr << "FAIL: " << message << '\n';
+        cerr << "FAIL: " << message << '\n';
     }
 }
 
-void checkPath(const std::vector<int>& actual,
-               const std::vector<int>& expected,
-               const std::string& message) {
+void checkPath(const vector<int>& actual,
+               const vector<int>& expected,
+               const string& message) {
     check(actual == expected, message);
 }
 
-void expectUnderflow(const std::function<void()>& action,
-                     const std::string& message) {
+void expectUnderflow(const function<void()>& action,
+                     const string& message) {
     try {
         action();
         check(false, message + " (did not throw)");
-    } catch (const std::underflow_error&) {
+    } catch (const underflow_error&) {
     } catch (...) {
         check(false, message + " (threw wrong exception)");
     }
 }
 
-void expectOutOfRange(const std::function<void()>& action,
-                      const std::string& message) {
+void expectOutOfRange(const function<void()>& action,
+                      const string& message) {
     try {
         action();
         check(false, message + " (did not throw)");
-    } catch (const std::out_of_range&) {
+    } catch (const out_of_range&) {
     } catch (...) {
         check(false, message + " (threw wrong exception)");
     }
 }
 
-void expectInvalidArgument(const std::function<void()>& action,
-                           const std::string& message) {
+void expectInvalidArgument(const function<void()>& action,
+                           const string& message) {
     try {
         action();
         check(false, message + " (did not throw)");
-    } catch (const std::invalid_argument&) {
+    } catch (const invalid_argument&) {
     } catch (...) {
         check(false, message + " (threw wrong exception)");
     }
@@ -80,7 +82,7 @@ void testHeapOrderingAndEmptyOperations() {
     heap.push({0.0, 8});
     check(heap.size() == 5 && heap.top().deviceId == 8,
           "heap reports size and minimum top");
-    const std::vector<int> expectedIds{8, 1, 3, 2, 4};
+    const vector<int> expectedIds{8, 1, 3, 2, 4};
     for (int expectedId : expectedIds) {
         check(heap.pop().deviceId == expectedId,
               "heap pops in priority and ID tie-break order");
@@ -90,7 +92,7 @@ void testHeapOrderingAndEmptyOperations() {
     check(heap.top().deviceId == 9,
           "heap supports finite negative priorities independently of Dijkstra");
     expectInvalidArgument(
-        [&] { heap.push({std::numeric_limits<double>::infinity(), 10}); },
+        [&] { heap.push({numeric_limits<double>::infinity(), 10}); },
         "heap rejects non-finite priorities");
 }
 
@@ -204,9 +206,9 @@ int main() {
     testNegativeEdgeCostRejectedByGraph();
 
     if (failures != 0) {
-        std::cerr << failures << " heap/Dijkstra check(s) failed.\n";
+        cerr << failures << " heap/Dijkstra check(s) failed.\n";
         return 1;
     }
-    std::cout << "All heap and Dijkstra checks passed.\n";
+    cout << "All heap and Dijkstra checks passed.\n";
     return 0;
 }

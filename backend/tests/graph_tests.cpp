@@ -6,12 +6,14 @@
 #include <stdexcept>
 #include <string>
 
+using namespace std;
+
 namespace {
 
 int failures = 0;
 
-cyberpath::Device makeDevice(int id, const std::string& name,
-                             const std::string& ip) {
+cyberpath::Device makeDevice(int id, const string& name,
+                             const string& ip) {
     cyberpath::Device device;
     device.id = id;
     device.name = name;
@@ -24,30 +26,30 @@ cyberpath::Device makeDevice(int id, const std::string& name,
     return device;
 }
 
-void check(bool condition, const std::string& message) {
+void check(bool condition, const string& message) {
     if (!condition) {
         ++failures;
-        std::cerr << "FAIL: " << message << '\n';
+        cerr << "FAIL: " << message << '\n';
     }
 }
 
-void expectInvalidArgument(const std::function<void()>& action,
-                           const std::string& message) {
+void expectInvalidArgument(const function<void()>& action,
+                           const string& message) {
     try {
         action();
         check(false, message + " (did not throw)");
-    } catch (const std::invalid_argument&) {
+    } catch (const invalid_argument&) {
     } catch (...) {
         check(false, message + " (threw wrong exception)");
     }
 }
 
-void expectOutOfRange(const std::function<void()>& action,
-                      const std::string& message) {
+void expectOutOfRange(const function<void()>& action,
+                      const string& message) {
     try {
         action();
         check(false, message + " (did not throw)");
-    } catch (const std::out_of_range&) {
+    } catch (const out_of_range&) {
     } catch (...) {
         check(false, message + " (threw wrong exception)");
     }
@@ -64,8 +66,8 @@ void testEmptyGraphAndDeviceValidation() {
     graph.addDevice(makeDevice(1, "Gateway", "192.0.2.1"));
     check(graph.containsDevice(1), "added device is present");
     check(graph.device(1).name == "Gateway", "device fields are retained");
-    check(graph.deviceIdByName("Gateway") == std::optional<int>{1} &&
-              graph.deviceIdByIpAddress("192.0.2.1") == std::optional<int>{1},
+    check(graph.deviceIdByName("Gateway") == optional<int>{1} &&
+              graph.deviceIdByIpAddress("192.0.2.1") == optional<int>{1},
           "custom hash indexes find devices by name and IP address");
     check(!graph.deviceIdByName("Missing") &&
               !graph.deviceIdByIpAddress("192.0.2.99"),
@@ -88,7 +90,7 @@ void testEmptyGraphAndDeviceValidation() {
     expectInvalidArgument([&] { graph.addDevice(invalid); },
                           "score above 100 rejected");
     invalid = makeDevice(2, "Bad score", "192.0.2.3");
-    invalid.vulnerabilityScore = std::nan("");
+    invalid.vulnerabilityScore = nan("");
     expectInvalidArgument([&] { graph.addDevice(invalid); },
                           "non-finite component rejected");
     invalid = makeDevice(2, "Missing type", "192.0.2.3");
@@ -174,7 +176,7 @@ void testActivationAndRemoval() {
               !graph.deviceIdByIpAddress("192.0.2.2"),
           "device removal deletes its name and IP index entries");
     graph.addDevice(makeDevice(2, "Two", "192.0.2.2"));
-    check(graph.deviceIdByName("Two") == std::optional<int>{2},
+    check(graph.deviceIdByName("Two") == optional<int>{2},
           "removed name and IP can be reused by a later device");
 }
 
@@ -196,9 +198,9 @@ int main() {
     testSortedDeviceSnapshot();
 
     if (failures != 0) {
-        std::cerr << failures << " graph check(s) failed.\n";
+        cerr << failures << " graph check(s) failed.\n";
         return 1;
     }
-    std::cout << "All graph checks passed.\n";
+    cout << "All graph checks passed.\n";
     return 0;
 }

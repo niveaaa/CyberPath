@@ -5,6 +5,8 @@
 
 #include <vector>
 
+using namespace std;
+
 namespace cyberpath {
 
 enum class RiskCategory { Low, Moderate, High };
@@ -20,6 +22,6 @@ double calculateRiskScore(const Device& device);
 RiskCategory classifyRisk(double score);
 const char* riskCategoryName(RiskCategory category) noexcept;
 RiskAssessment assessRisk(const Device& device);
-std::vector<RiskAssessment> rankRisk(const Graph& graph);
+vector<RiskAssessment> rankRisk(const Graph& graph);
 
 }  // namespace cyberpath

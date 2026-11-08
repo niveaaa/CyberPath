@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+using namespace std;
+
 namespace {
 
 int failures = 0;
@@ -13,42 +15,42 @@ int failures = 0;
 cyberpath::Device makeDevice(int id) {
     cyberpath::Device device;
     device.id = id;
-    device.name = "Device " + std::to_string(id);
-    device.ipAddress = "192.0.2." + std::to_string(id);
+    device.name = "Device " + to_string(id);
+    device.ipAddress = "192.0.2." + to_string(id);
     device.type = "workstation";
     return device;
 }
 
-void check(bool condition, const std::string& message) {
+void check(bool condition, const string& message) {
     if (!condition) {
         ++failures;
-        std::cerr << "FAIL: " << message << '\n';
+        cerr << "FAIL: " << message << '\n';
     }
 }
 
-void checkOrder(const std::vector<int>& actual,
-                const std::vector<int>& expected,
-                const std::string& label) {
+void checkOrder(const vector<int>& actual,
+                const vector<int>& expected,
+                const string& label) {
     check(actual == expected, label);
 }
 
-void expectOutOfRange(const std::function<void()>& action,
-                      const std::string& label) {
+void expectOutOfRange(const function<void()>& action,
+                      const string& label) {
     try {
         action();
         check(false, label + " (did not throw)");
-    } catch (const std::out_of_range&) {
+    } catch (const out_of_range&) {
     } catch (...) {
         check(false, label + " (threw wrong exception)");
     }
 }
 
-void expectInvalidArgument(const std::function<void()>& action,
-                           const std::string& label) {
+void expectInvalidArgument(const function<void()>& action,
+                           const string& label) {
     try {
         action();
         check(false, label + " (did not throw)");
-    } catch (const std::invalid_argument&) {
+    } catch (const invalid_argument&) {
     } catch (...) {
         check(false, label + " (threw wrong exception)");
     }
@@ -164,9 +166,9 @@ int main() {
     testInactiveDevicesAndEdges();
 
     if (failures != 0) {
-        std::cerr << failures << " traversal check(s) failed.\n";
+        cerr << failures << " traversal check(s) failed.\n";
         return 1;
     }
-    std::cout << "All traversal checks passed.\n";
+    cout << "All traversal checks passed.\n";
     return 0;
 }

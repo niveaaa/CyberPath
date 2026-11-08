@@ -9,12 +9,14 @@
 #include <stdexcept>
 #include <string>
 
+using namespace std;
+
 namespace cyberpath {
 namespace {
 
 const Json& required(const Json& object, const char* key, Json::value_t type) {
     if (!object.is_object() || !object.contains(key) || object.at(key).type() != type) {
-        throw std::invalid_argument(std::string("Missing or invalid field: ") + key);
+        throw invalid_argument(string("Missing or invalid field: ") + key);
     }
     return object.at(key);
 }
@@ -22,7 +24,7 @@ const Json& required(const Json& object, const char* key, Json::value_t type) {
 const Json& requiredInteger(const Json& object, const char* key) {
     if (!object.is_object() || !object.contains(key) ||
         !object.at(key).is_number_integer()) {
-        throw std::invalid_argument(std::string("Missing or invalid integer field: ") + key);
+        throw invalid_argument(string("Missing or invalid integer field: ") + key);
     }
     return object.at(key);
 }
@@ -30,7 +32,7 @@ const Json& requiredInteger(const Json& object, const char* key) {
 const Json& requiredNumber(const Json& object, const char* key) {
     if (!object.is_object() || !object.contains(key) ||
         !object.at(key).is_number()) {
-        throw std::invalid_argument(std::string("Missing or invalid number field: ") + key);
+        throw invalid_argument(string("Missing or invalid number field: ") + key);
     }
     return object.at(key);
 }
@@ -51,13 +53,13 @@ Graph parseNetwork(const Json& request) {
         requiredNumber(item, "criticality_score");
         if ((item.contains("is_critical") && !item.at("is_critical").is_boolean()) ||
             (item.contains("is_active") && !item.at("is_active").is_boolean())) {
-            throw std::invalid_argument("Device active/critical flags must be booleans.");
+            throw invalid_argument("Device active/critical flags must be booleans.");
         }
         Device device;
         device.id = item.at("id").get<int>();
-        device.name = item.at("name").get<std::string>();
-        device.ipAddress = item.at("ip_address").get<std::string>();
-        device.type = item.at("type").get<std::string>();
+        device.name = item.at("name").get<string>();
+        device.ipAddress = item.at("ip_address").get<string>();
+        device.type = item.at("type").get<string>();
         device.vulnerabilityScore = item.at("vulnerability_score").get<double>();
         device.exposureScore = item.at("exposure_score").get<double>();
         device.connectivityScore = item.at("connectivity_score").get<double>();
@@ -71,7 +73,7 @@ Graph parseNetwork(const Json& request) {
         requiredInteger(item, "destination_id");
         requiredNumber(item, "cost");
         if (item.contains("is_active") && !item.at("is_active").is_boolean()) {
-            throw std::invalid_argument("Edge is_active must be a boolean.");
+            throw invalid_argument("Edge is_active must be a boolean.");
         }
         graph.addEdge(item.at("source_id").get<int>(),
                       item.at("destination_id").get<int>(),
@@ -81,13 +83,13 @@ Graph parseNetwork(const Json& request) {
     return graph;
 }
 
-Json handleValidRequest(const Json& request, std::string& algorithm) {
+Json handleValidRequest(const Json& request, string& algorithm) {
     if (!request.is_object() || !request.contains("schema_version") ||
         !request.at("schema_version").is_number_integer() ||
         request.at("schema_version").get<int>() != 1) {
-        throw std::invalid_argument("Unsupported schema_version; expected 1.");
+        throw invalid_argument("Unsupported schema_version; expected 1.");
     }
-    algorithm = required(request, "algorithm", Json::value_t::string).get<std::string>();
+    algorithm = required(request, "algorithm", Json::value_t::string).get<string>();
     const Json& params = required(request, "parameters", Json::value_t::object);
     if (algorithm == "bfs" || algorithm == "dfs" || algorithm == "dijkstra") {
         requiredInteger(params, "source_id");
@@ -95,7 +97,7 @@ Json handleValidRequest(const Json& request, std::string& algorithm) {
     if (algorithm == "dijkstra") {
         requiredInteger(params, "target_id");
     }
-    const auto start = std::chrono::steady_clock::now();
+    const auto start = chrono::steady_clock::now();
     const Graph graph = parseNetwork(request);
     Json result;
     Json metrics = {{"devices", graph.deviceCount()}, {"edges", graph.edgeCount()}};
@@ -136,11 +138,11 @@ Json handleValidRequest(const Json& request, std::string& algorithm) {
         }
         result = {{"ranked_devices", ranked}};
     } else {
-        throw std::invalid_argument("Unsupported algorithm: " + algorithm);
+        throw invalid_argument("Unsupported algorithm: " + algorithm);
     }
 
-    const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(
-        std::chrono::steady_clock::now() - start).count();
+    const auto elapsed = chrono::duration_cast<chrono::microseconds>(
+        chrono::steady_clock::now() - start).count();
     metrics["request_time_us"] = elapsed;
     return {{"schema_version", 1}, {"success", true}, {"algorithm", algorithm},
             {"result", result}, {"metrics", metrics}, {"steps", steps}};
@@ -149,10 +151,10 @@ Json handleValidRequest(const Json& request, std::string& algorithm) {
 }  // namespace
 
 Json handleJsonRequest(const Json& request) {
-    std::string algorithm;
+    string algorithm;
     try {
         return handleValidRequest(request, algorithm);
-    } catch (const std::exception& error) {
+    } catch (const exception& error) {
         return {{"schema_version", 1}, {"success", false},
                 {"algorithm", algorithm.empty() ? Json(nullptr) : Json(algorithm)},
                 {"error", {{"code", "INVALID_REQUEST"}, {"message", error.what()}}}};

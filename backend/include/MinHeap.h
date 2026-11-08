@@ -3,6 +3,8 @@
 #include <cstddef>
 #include <vector>
 
+using namespace std;
+
 namespace cyberpath {
 
 struct HeapEntry {
@@ -17,14 +19,14 @@ public:
     const HeapEntry& top() const;
     HeapEntry pop();
     bool empty() const noexcept;
-    std::size_t size() const noexcept;
+    size_t size() const noexcept;
 
 private:
-    std::vector<HeapEntry> entries_;
+    vector<HeapEntry> entries_;
 
     static bool hasHigherPriority(const HeapEntry& lhs, const HeapEntry& rhs);
-    void siftUp(std::size_t index);
-    void siftDown(std::size_t index);
+    void siftUp(size_t index);
+    void siftDown(size_t index);
 };
 
 }  // namespace cyberpath

@@ -7,24 +7,26 @@
 #include <map>
 #include <vector>
 
+using namespace std;
+
 namespace cyberpath {
 
 struct TraversalMetrics {
-    std::size_t verticesVisited = 0;
-    std::size_t edgesExamined = 0;
-    std::uint64_t executionTimeUs = 0;
+    size_t verticesVisited = 0;
+    size_t edgesExamined = 0;
+    uint64_t executionTimeUs = 0;
 };
 
 struct BFSResult {
-    std::vector<int> traversalOrder;
-    std::vector<int> reachableDevices;
-    std::map<int, std::size_t> hopDistances;
+    vector<int> traversalOrder;
+    vector<int> reachableDevices;
+    map<int, size_t> hopDistances;
     TraversalMetrics metrics;
 };
 
 struct DFSResult {
-    std::vector<int> traversalOrder;
-    std::vector<int> reachableDevices;
+    vector<int> traversalOrder;
+    vector<int> reachableDevices;
     TraversalMetrics metrics;
 };
 

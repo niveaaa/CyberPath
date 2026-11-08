@@ -6,13 +6,15 @@
 #include <stdexcept>
 #include <string>
 
+using namespace std;
+
 namespace cyberpath {
 namespace {
 
 void validateScore(double score, const char* fieldName) {
-    if (!std::isfinite(score) || score < kMinimumComponentScore ||
+    if (!isfinite(score) || score < kMinimumComponentScore ||
         score > kMaximumComponentScore) {
-        throw std::invalid_argument(std::string(fieldName) +
+        throw invalid_argument(string(fieldName) +
                                     " must be between 0 and 100.");
     }
 }
@@ -62,8 +64,8 @@ RiskAssessment assessRisk(const Device& device) {
     return assessment;
 }
 
-std::vector<RiskAssessment> rankRisk(const Graph& graph) {
-    std::vector<RiskAssessment> assessments;
+vector<RiskAssessment> rankRisk(const Graph& graph) {
+    vector<RiskAssessment> assessments;
     assessments.reserve(graph.deviceCount());
     for (const Device& device : graph.devices()) {
         assessments.push_back(assessRisk(device));
